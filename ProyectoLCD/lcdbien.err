@@ -1,0 +1,11 @@
+Message[302] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 37 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 38 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 40 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 42 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Warning[202] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 592 : Argument out of range.  Least significant bits used.
+Warning[219] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 594 : Invalid RAM location specified.
+Message[302] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 594 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Warning[202] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 596 : Argument out of range.  Least significant bits used.
+Message[305] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 598 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 600 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\PROYECTO1\LCDBIEN.ASM 602 : Using default destination of 1 (file).

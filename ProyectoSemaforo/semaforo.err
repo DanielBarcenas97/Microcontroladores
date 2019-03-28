@@ -1,0 +1,10 @@
+Warning[205] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 1 : Found directive in column 1. (processor)
+Warning[205] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 2 : Found directive in column 1. (include)
+Message[301] C:\PROGRAM FILES (X86)\MICROCHIP\MPASM SUITE\P16F877.INC 33 : MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+Message[302] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 20 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 67 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 69 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 71 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 82 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 84 : Using default destination of 1 (file).
+Message[305] C:\USERS\DANIEL\DESKTOP\P2\SEMAFORO.ASM 86 : Using default destination of 1 (file).

@@ -1,0 +1,1177 @@
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001    processor 16F877a
+                      00002    include <P16F877a.INC>
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F877A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2012 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00566         LIST
+                      00003 
+                      00004 ;Variables para DELAY
+  00000030            00005 val1 equ 0x30
+  00000031            00006 val2 equ 0x31
+  00000021            00007 valor1 equ h'21'
+  00000022            00008 valor2 equ h'22'
+  00000023            00009 valor3 equ h'23'
+  00000100            00010 cte1 equ 100h 
+  00000500            00011 cte2 equ 500h
+  00000600            00012 cte3 equ 600h   
+                      00013 
+                      00014 
+                      00015 ;Definicion de variables a utilizar para
+                      00016 ;comparar las entradas a traves del puerto A
+  00000024            00017 v0 equ h'24'  
+  00000025            00018 v1 equ h'25'
+  00000026            00019 v2 equ h'26'
+  00000027            00020 v3 equ h'27'
+  00000000            00021 c0 equ 0h 
+  00000001            00022 c1 equ 1h
+  00000002            00023 c2 equ 2h
+  00000003            00024 c3 equ 3h 
+                      00025 
+0000                  00026     org 0              ;Vector de RESET
+0000   2805           00027     goto INICIO                 
+0005                  00028     org 5              ;Inicio del Programa
+                      00029                 
+                      00030     ;Configuración de puertos
+0005                  00031 INICIO:
+0005   0186           00032     clrf PORTB         ;Limpia PORTB    
+0006   0188           00033     clrf PORTD         ;Limpia PORTD
+0007   0185           00034         clrf PORTA
+0008   1683           00035     bsf STATUS, RP0  
+0009   1303           00036     bcf STATUS, RP1    ;Selecciona el banco 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000A   0186           00037     clrf TRISB         ;Configura PORTB como salida
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000B   0188           00038     clrf TRISD         ;Configura PORTD como salida
+000C   3006           00039         movlw 06h       ;Configura puertos A y E como digitales
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000D   009F           00040     movwf ADCON1 
+000E   303F           00041     movlw 3fh       ;Configura el Puerto A como entrada
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000F   0085           00042     movwf TRISA
+0010   1283           00043     bcf STATUS,RP0     ;Regresa al banco 0
+0011   2040           00044         call ESCRIBIR
+                      00045 
+0012                  00046 CICLO:
+0012   3000           00047            movlw c0
+0013   00A4           00048        movwf v0
+0014   0805           00049        movfw PORTA     ;Mueve lo que hay en PORTA a W
+0015   0624           00050        xorwf v0,w      ;Verifica si la entrada es $00
+0016   1903           00051        btfsc STATUS,Z  ;z=0?
+0017   282A           00052        goto START_LCD        ;NO, entonces v0=W
+                      00053                        ;SI, entonves v0!=W
+0018   3001           00054        movlw c1
+0019   00A5           00055        movwf v1
+001A   0805           00056        movfw PORTA
+001B   0625           00057        xorwf v1,w      ;Verifica si la entrada es $01
+001C   1903           00058        btfsc STATUS,Z
+001D   2830           00059        goto START_LCD1
+                      00060        
+001E   3002           00061        movlw c2
+001F   00A6           00062        movwf v2
+0020   0805           00063        movfw PORTA
+0021   0626           00064        xorwf v2,w      ;Verifica si la entrada es $02
+0022   1903           00065        btfsc STATUS,Z
+0023   2833           00066        goto START_LCD2
+                      00067 
+0024   3003           00068        movlw c3
+0025   00A7           00069        movwf v3
+0026   0805           00070        movfw PORTA
+0027   0627           00071        xorwf v3,w      ;Verifica si la entrada es $03
+0028   1903           00072        btfsc STATUS,Z
+0029   2837           00073        goto  START_LCD3
+                      00074 ;;;;;;;;;;
+002A                  00075 START_LCD:              
+002A   21E7           00076     call INICIA_LCD    ;Configura el LCD
+002B   218E           00077     call M1            ;Muestra Mensaje
+002C   21FC           00078     call LINEA2        ;Configura linea 2
+002D   21B3           00079     call M2            ;Muestra Mensaje
+002E   2206           00080         call RETARDO
+002F   2812           00081     goto CICLO
+0030                  00082 START_LCD1:             
+0030   21E7           00083     call INICIA_LCD    ;Configura el LCD
+0031   205E           00084     call M3            ;Muestra Mensaje
+0032   2812           00085     goto CICLO
+0033                  00086 START_LCD2:             
+0033   21E7           00087     call INICIA_LCD    ;Configura el LCD
+0034   21FC           00088     call LINEA2        ;Configura linea 2
+0035   20BB           00089     call M4            ;Muestra Mensaje
+0036   2812           00090     goto CICLO
+0037                  00091 START_LCD3:             
+0037   21E7           00092     call INICIA_LCD    ;Configura el LCD
+0038   203A           00093     call M5           ;Muestra Mensaje
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0039   2812           00094     goto CICLO
+                      00095 
+003A                  00096 M5:     
+003A   2201           00097         call CENTRO
+003B   3000           00098     movlw   0x00
+003C   0086           00099         movwf   PORTB
+003D   21F9           00100     call    ENVIA
+003E   2206           00101         call    RETARDO
+003F   0008           00102         return
+                      00103 
+0040                  00104 ESCRIBIR:
+0040   1008           00105         bcf PORTD,0
+0041   3040           00106     movlw 0x40       ; CGRAM
+0042   0086           00107     movwf PORTB
+0043   21F3           00108     call COMANDO     ; Se da de alta el comando
+0044   1408           00109         bsf PORTD,0
+0045   3004           00110         movlw b'00000100'
+0046   0086           00111         movwf PORTB
+0047   21F3           00112     call COMANDO 
+0048   3004           00113         movlw b'00000100'
+0049   0086           00114         movwf PORTB
+004A   21F3           00115     call COMANDO 
+004B   300E           00116         movlw b'00001110'
+004C   0086           00117     movwf PORTB
+004D   21F3           00118         call COMANDO 
+004E   300E           00119         movlw b'00001110'
+004F   0086           00120     movwf PORTB
+0050   21F3           00121         call COMANDO 
+0051   301F           00122         movlw b'00011111'
+0052   0086           00123         movwf PORTB
+0053   21F3           00124     call COMANDO 
+0054   3011           00125         movlw b'00010001'
+0055   0086           00126         movwf PORTB
+0056   21F3           00127     call COMANDO 
+0057   3011           00128         movlw b'00010001'
+0058   0086           00129         movwf PORTB
+0059   21F3           00130     call COMANDO  
+005A   3011           00131         movlw b'00010001'
+005B   0086           00132         movwf PORTB
+005C   21F3           00133     call COMANDO 
+005D   0008           00134         return
+                      00135 
+                      00136 ;Mensaje a enviar
+005E                  00137 M3: 
+                      00138     ;Edgar 
+005E   3045           00139     movlw 'E'          ;Mueve 'H' a W
+005F   0086           00140     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0060   21F9           00141     call ENVIA 
+0061   3044           00142      movlw 'D'          ;Mueve 'H' a W
+0062   0086           00143     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0063   21F9           00144     call ENVIA 
+0064   3047           00145         movlw 'G'          ;Mueve 'H' a W
+0065   0086           00146     movwf PORTB        ;Mueve lo que hay en W a PORTB
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0066   21F9           00147     call ENVIA 
+0067   3041           00148      movlw 'A'          ;Mueve 'H' a W
+0068   0086           00149     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0069   21F9           00150     call ENVIA
+006A   3052           00151         movlw 'R'          ;Mueve 'H' a W
+006B   0086           00152     movwf PORTB        ;Mueve lo que hay en W a PORTB
+006C   21F9           00153     call ENVIA 
+006D   3020           00154      movlw ' '          ;Mueve 'H' a W
+006E   0086           00155     movwf PORTB        ;Mueve lo que hay en W a PORTB
+006F   21F9           00156     call ENVIA  
+                      00157      
+0070   3042           00158     movlw 'B'          ;Mueve 'H' a W
+0071   0086           00159     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0072   21F9           00160     call ENVIA 
+0073   3041           00161      movlw 'A'          ;Mueve 'H' a W
+0074   0086           00162     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0075   21F9           00163     call ENVIA 
+0076   3052           00164         movlw 'R'          ;Mueve 'H' a W
+0077   0086           00165     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0078   21F9           00166     call ENVIA 
+0079   3043           00167      movlw 'C'          ;Mueve 'H' a W
+007A   0086           00168     movwf PORTB        ;Mueve lo que hay en W a PORTB
+007B   21F9           00169     call ENVIA
+007C   3045           00170         movlw 'E'          ;Mueve 'H' a W
+007D   0086           00171     movwf PORTB        ;Mueve lo que hay en W a PORTB
+007E   21F9           00172     call ENVIA 
+007F   304E           00173      movlw 'N'          ;Mueve 'H' a W
+0080   0086           00174     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0081   21F9           00175     call ENVIA 
+0082   3041           00176         movlw 'A'          ;Mueve 'H' a W
+0083   0086           00177     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0084   21F9           00178     call ENVIA 
+0085   3053           00179      movlw 'S'          ;Mueve 'H' a W
+0086   0086           00180     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0087   21F9           00181     call ENVIA 
+                      00182 
+0088   1008           00183         bcf PORTD,0
+0089   301C           00184         movlw 0x1C     
+008A   0086           00185     movwf PORTB
+008B   21F3           00186     call COMANDO
+008C   301C           00187         movlw 0x1C     
+008D   0086           00188     movwf PORTB
+008E   21F3           00189     call COMANDO
+008F   301C           00190         movlw 0x1C     
+0090   0086           00191     movwf PORTB
+0091   21F3           00192     call COMANDO
+0092   301C           00193         movlw 0x1C     
+0093   0086           00194     movwf PORTB
+0094   21F3           00195     call COMANDO
+0095   301C           00196         movlw 0x1C     
+0096   0086           00197     movwf PORTB
+0097   21F3           00198     call COMANDO
+0098   301C           00199         movlw 0x1C     
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0099   0086           00200     movwf PORTB
+009A   21F3           00201     call COMANDO
+009B   301C           00202         movlw 0x1C     
+009C   0086           00203     movwf PORTB
+009D   21F3           00204     call COMANDO
+009E   301C           00205         movlw 0x1C     
+009F   0086           00206     movwf PORTB
+00A0   21F3           00207     call COMANDO
+00A1   301C           00208         movlw 0x1C     
+00A2   0086           00209     movwf PORTB
+00A3   21F3           00210     call COMANDO
+00A4   301C           00211         movlw 0x1C     
+00A5   0086           00212     movwf PORTB
+00A6   21F3           00213     call COMANDO
+00A7   301C           00214         movlw 0x1C     
+00A8   0086           00215     movwf PORTB
+00A9   21F3           00216     call COMANDO
+00AA   301C           00217         movlw 0x1C     
+00AB   0086           00218     movwf PORTB
+00AC   21F3           00219     call COMANDO
+00AD   301C           00220         movlw 0x1C     
+00AE   0086           00221     movwf PORTB
+00AF   21F3           00222     call COMANDO
+00B0   301C           00223         movlw 0x1C     
+00B1   0086           00224     movwf PORTB
+00B2   21F3           00225     call COMANDO 
+00B3   301C           00226         movlw 0x1C     
+00B4   0086           00227     movwf PORTB
+00B5   21F3           00228     call COMANDO 
+00B6   301C           00229         movlw 0x1C     
+00B7   0086           00230     movwf PORTB
+00B8   21F3           00231     call COMANDO  
+00B9   1408           00232         bsf PORTD,0
+00BA   0008           00233     return
+                      00234 
+00BB                  00235 M4:
+00BB   301C           00236         movlw 0x1C     
+00BC   0086           00237     movwf PORTB
+00BD   21F3           00238     call COMANDO
+00BE   301C           00239         movlw 0x1C     
+00BF   0086           00240     movwf PORTB
+00C0   21F3           00241     call COMANDO
+00C1   301C           00242         movlw 0x1C     
+00C2   0086           00243     movwf PORTB
+00C3   21F3           00244     call COMANDO
+00C4   301C           00245         movlw 0x1C     
+00C5   0086           00246     movwf PORTB
+00C6   21F3           00247     call COMANDO
+00C7   301C           00248         movlw 0x1C     
+00C8   0086           00249     movwf PORTB
+00C9   21F3           00250     call COMANDO
+00CA   301C           00251         movlw 0x1C     
+00CB   0086           00252     movwf PORTB
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00CC   21F3           00253     call COMANDO
+00CD   301C           00254         movlw 0x1C     
+00CE   0086           00255     movwf PORTB
+00CF   21F3           00256     call COMANDO
+00D0   301C           00257         movlw 0x1C     
+00D1   0086           00258     movwf PORTB
+00D2   21F3           00259     call COMANDO
+00D3   301C           00260         movlw 0x1C     
+00D4   0086           00261     movwf PORTB
+00D5   21F3           00262     call COMANDO
+00D6   301C           00263         movlw 0x1C     
+00D7   0086           00264     movwf PORTB
+00D8   21F3           00265     call COMANDO
+00D9   301C           00266         movlw 0x1C     
+00DA   0086           00267     movwf PORTB
+00DB   21F3           00268     call COMANDO
+00DC   301C           00269         movlw 0x1C     
+00DD   0086           00270     movwf PORTB
+00DE   21F3           00271     call COMANDO
+00DF   301C           00272         movlw 0x1C     
+00E0   0086           00273     movwf PORTB
+00E1   21F3           00274     call COMANDO
+00E2   301C           00275         movlw 0x1C     
+00E3   0086           00276     movwf PORTB
+00E4   21F3           00277     call COMANDO
+00E5   301C           00278         movlw 0x1C     
+00E6   0086           00279     movwf PORTB
+00E7   21F3           00280     call COMANDO
+00E8   301C           00281     movlw 0x1C     
+00E9   0086           00282     movwf PORTB
+00EA   21F3           00283     call COMANDO
+                      00284 
+00EB   3045           00285     movlw 'E'          ;Mueve 'H' a W
+00EC   0086           00286     movwf PORTB        ;Mueve lo que hay en W a PORTB
+00ED   21F9           00287     call ENVIA 
+00EE   3044           00288      movlw 'D'          ;Mueve 'H' a W
+00EF   0086           00289     movwf PORTB        ;Mueve lo que hay en W a PORTB
+00F0   21F9           00290     call ENVIA 
+00F1   3047           00291         movlw 'G'          ;Mueve 'H' a W
+00F2   0086           00292     movwf PORTB        ;Mueve lo que hay en W a PORTB
+00F3   21F9           00293     call ENVIA 
+00F4   3041           00294      movlw 'A'          ;Mueve 'H' a W
+00F5   0086           00295     movwf PORTB        ;Mueve lo que hay en W a PORTB
+00F6   21F9           00296     call ENVIA
+00F7   3052           00297         movlw 'R'          ;Mueve 'H' a W
+00F8   0086           00298     movwf PORTB        ;Mueve lo que hay en W a PORTB
+00F9   21F9           00299     call ENVIA 
+00FA   3020           00300     movlw ' '          ;Mueve 'H' a W
+00FB   0086           00301     movwf PORTB        ;Mueve lo que hay en W a PORTB
+00FC   21F9           00302     call ENVIA  
+                      00303      
+00FD   3042           00304     movlw 'B'          ;Mueve 'H' a W
+00FE   0086           00305     movwf PORTB        ;Mueve lo que hay en W a PORTB
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00FF   21F9           00306     call ENVIA 
+0100   3041           00307      movlw 'A'          ;Mueve 'H' a W
+0101   0086           00308     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0102   21F9           00309     call ENVIA 
+0103   3052           00310         movlw 'R'          ;Mueve 'H' a W
+0104   0086           00311     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0105   21F9           00312     call ENVIA 
+0106   3043           00313      movlw 'C'          ;Mueve 'H' a W
+0107   0086           00314     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0108   21F9           00315     call ENVIA
+0109   3045           00316         movlw 'E'          ;Mueve 'H' a W
+010A   0086           00317     movwf PORTB        ;Mueve lo que hay en W a PORTB
+010B   21F9           00318     call ENVIA 
+010C   304E           00319      movlw 'N'          ;Mueve 'H' a W
+010D   0086           00320     movwf PORTB        ;Mueve lo que hay en W a PORTB
+010E   21F9           00321     call ENVIA 
+010F   3041           00322         movlw 'A'          ;Mueve 'H' a W
+0110   0086           00323     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0111   21F9           00324     call ENVIA 
+0112   3053           00325      movlw 'S'          ;Mueve 'H' a W
+0113   0086           00326     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0114   21F9           00327     call ENVIA 
+                      00328 
+0115   1008           00329         bcf PORTD,0
+0116   3018           00330     movlw 0x18     
+0117   0086           00331     movwf PORTB
+0118   21F3           00332     call COMANDO
+0119   3018           00333         movlw 0x18     
+011A   0086           00334     movwf PORTB
+011B   21F3           00335     call COMANDO
+011C   3018           00336         movlw 0x18     
+011D   0086           00337     movwf PORTB
+011E   21F3           00338     call COMANDO
+011F   3018           00339         movlw 0x18     
+0120   0086           00340     movwf PORTB
+0121   21F3           00341     call COMANDO
+0122   3018           00342         movlw 0x18     
+0123   0086           00343     movwf PORTB
+0124   21F3           00344     call COMANDO
+0125   3018           00345         movlw 0x18     
+0126   0086           00346     movwf PORTB
+0127   21F3           00347     call COMANDO
+0128   3018           00348         movlw 0x18     
+0129   0086           00349     movwf PORTB
+012A   21F3           00350     call COMANDO
+012B   3018           00351         movlw 0x18     
+012C   0086           00352     movwf PORTB
+012D   21F3           00353     call COMANDO
+012E   3018           00354         movlw 0x18     
+012F   0086           00355     movwf PORTB
+0130   21F3           00356     call COMANDO
+0131   3018           00357         movlw 0x18     
+0132   0086           00358     movwf PORTB
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0133   21F3           00359     call COMANDO
+0134   3018           00360         movlw 0x18     
+0135   0086           00361     movwf PORTB
+0136   21F3           00362     call COMANDO
+0137   3018           00363         movlw 0x18     
+0138   0086           00364     movwf PORTB
+0139   21F3           00365     call COMANDO
+013A   3018           00366         movlw 0x18     
+013B   0086           00367     movwf PORTB
+013C   21F3           00368     call COMANDO
+013D   3018           00369         movlw 0x18     
+013E   0086           00370     movwf PORTB
+013F   21F3           00371     call COMANDO 
+0140   3018           00372         movlw 0x18     
+0141   0086           00373     movwf PORTB
+0142   21F3           00374     call COMANDO 
+0143   3018           00375         movlw 0x18     
+0144   0086           00376     movwf PORTB
+0145   21F3           00377     call COMANDO   
+0146   3018           00378         movlw 0x18     
+0147   0086           00379     movwf PORTB
+0148   21F3           00380     call COMANDO
+0149   3018           00381         movlw 0x18     
+014A   0086           00382     movwf PORTB
+014B   21F3           00383     call COMANDO
+014C   3018           00384         movlw 0x18     
+014D   0086           00385     movwf PORTB
+014E   21F3           00386     call COMANDO
+014F   3018           00387         movlw 0x18     
+0150   0086           00388     movwf PORTB
+0151   21F3           00389     call COMANDO
+0152   3018           00390         movlw 0x18     
+0153   0086           00391     movwf PORTB
+0154   21F3           00392     call COMANDO
+0155   3018           00393         movlw 0x18     
+0156   0086           00394     movwf PORTB
+0157   21F3           00395     call COMANDO
+0158   3018           00396         movlw 0x18     
+0159   0086           00397     movwf PORTB
+015A   21F3           00398     call COMANDO
+015B   3018           00399         movlw 0x18     
+015C   0086           00400     movwf PORTB
+015D   21F3           00401     call COMANDO
+015E   3018           00402         movlw 0x18     
+015F   0086           00403     movwf PORTB
+0160   21F3           00404     call COMANDO
+0161   3018           00405         movlw 0x18     
+0162   0086           00406     movwf PORTB
+0163   21F3           00407     call COMANDO
+0164   3018           00408         movlw 0x18     
+0165   0086           00409     movwf PORTB
+0166   21F3           00410     call COMANDO
+0167   3018           00411         movlw 0x18     
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0168   0086           00412     movwf PORTB
+0169   21F3           00413     call COMANDO
+016A   3018           00414         movlw 0x18     
+016B   0086           00415     movwf PORTB
+016C   21F3           00416     call COMANDO
+016D   3018           00417         movlw 0x18     
+016E   0086           00418     movwf PORTB
+016F   21F3           00419     call COMANDO 
+0170   3018           00420         movlw 0x18     
+0171   0086           00421     movwf PORTB
+0172   21F3           00422     call COMANDO 
+0173   3018           00423         movlw 0x18     
+0174   0086           00424     movwf PORTB
+0175   21F3           00425     call COMANDO  
+0176   1408           00426         bsf PORTD,0
+0177   0008           00427     return
+                      00428 
+                      00429 
+0178                  00430 M7:
+0178   3056           00431     movlw 'V'          ;Mueve 'H' a W
+0179   0086           00432     movwf PORTB        ;Mueve lo que hay en W a PORTB
+017A   21F9           00433     call ENVIA         ;Imprime en LCD
+017B   3041           00434     movlw 'A'
+017C   0086           00435     movwf PORTB
+017D   21F9           00436     call ENVIA
+017E   304C           00437     movlw 'L'
+017F   0086           00438     movwf PORTB
+0180   21F9           00439     call ENVIA
+0181   3045           00440     movlw 'E'
+0182   0086           00441     movwf PORTB
+0183   21F9           00442     call ENVIA
+0184   3052           00443     movlw 'R'
+0185   0086           00444     movwf PORTB
+0186   21F9           00445     call ENVIA
+0187   3049           00446     movlw 'I'
+0188   0086           00447     movwf PORTB
+0189   21F9           00448     call ENVIA
+018A   3041           00449         movlw 'A'
+018B   0086           00450     movwf PORTB
+018C   21F9           00451     call ENVIA
+018D   0008           00452     return
+                      00453 
+018E                  00454 M1:
+018E   3045           00455     movlw 'E'          ;Mueve 'H' a W
+018F   0086           00456     movwf PORTB        ;Mueve lo que hay en W a PORTB
+0190   21F9           00457     call ENVIA         ;Imprime en LCD
+0191   3044           00458     movlw 'D'
+0192   0086           00459     movwf PORTB
+0193   21F9           00460     call ENVIA
+0194   3047           00461     movlw 'G'
+0195   0086           00462     movwf PORTB
+0196   21F9           00463     call ENVIA
+0197   3041           00464     movlw 'A'
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0198   0086           00465     movwf PORTB
+0199   21F9           00466     call ENVIA
+019A   3052           00467     movlw 'R'
+019B   0086           00468     movwf PORTB
+019C   21F9           00469     call ENVIA
+019D   3020           00470     movlw ' '
+019E   0086           00471     movwf PORTB
+019F   21F9           00472     call ENVIA
+01A0   3044           00473         movlw 'D'
+01A1   0086           00474     movwf PORTB
+01A2   21F9           00475     call ENVIA
+01A3   3041           00476         movlw 'A'
+01A4   0086           00477     movwf PORTB
+01A5   21F9           00478     call ENVIA
+01A6   304E           00479     movlw 'N'
+01A7   0086           00480     movwf PORTB
+01A8   21F9           00481     call ENVIA
+01A9   3049           00482         movlw 'I'
+01AA   0086           00483     movwf PORTB
+01AB   21F9           00484     call ENVIA
+01AC   3045           00485         movlw 'E'
+01AD   0086           00486     movwf PORTB
+01AE   21F9           00487     call ENVIA
+01AF   304C           00488     movlw 'L'
+01B0   0086           00489     movwf PORTB
+01B1   21F9           00490     call ENVIA
+01B2   0008           00491     return      
+01B3                  00492 M2:
+01B3   3042           00493     movlw 'B'         ;Mueve 'I' a W
+01B4   0086           00494     movwf PORTB       ;Mueve lo que hay en W a PORTB
+01B5   21F9           00495     call ENVIA        ;Imprime en LCD
+01B6   3041           00496     movlw 'A'
+01B7   0086           00497     movwf PORTB
+01B8   21F9           00498     call ENVIA
+01B9   3052           00499     movlw 'R'
+01BA   0086           00500     movwf PORTB
+01BB   21F9           00501     call ENVIA
+01BC   3043           00502     movlw 'C'
+01BD   0086           00503     movwf PORTB
+01BE   21F9           00504     call ENVIA
+01BF   3045           00505     movlw 'E'
+01C0   0086           00506     movwf PORTB
+01C1   21F9           00507     call ENVIA
+01C2   304E           00508     movlw 'N'
+01C3   0086           00509     movwf PORTB
+01C4   21F9           00510     call ENVIA
+01C5   3041           00511     movlw 'A'
+01C6   0086           00512     movwf PORTB
+01C7   21F9           00513     call ENVIA
+01C8   3053           00514         movlw 'S'
+01C9   0086           00515     movwf PORTB
+01CA   21F9           00516     call ENVIA
+01CB   3020           00517     movlw ' '
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01CC   0086           00518     movwf PORTB
+01CD   21F9           00519     call ENVIA
+01CE   304D           00520     movlw 'M'
+01CF   0086           00521     movwf PORTB
+01D0   21F9           00522     call ENVIA
+01D1   3041           00523     movlw 'A'
+01D2   0086           00524     movwf PORTB
+01D3   21F9           00525     call ENVIA
+01D4   3052           00526     movlw 'R'
+01D5   0086           00527     movwf PORTB
+01D6   21F9           00528     call ENVIA
+01D7   3054           00529     movlw 'T'
+01D8   0086           00530     movwf PORTB
+01D9   21F9           00531     call ENVIA
+01DA   3049           00532         movlw 'I'
+01DB   0086           00533     movwf PORTB
+01DC   21F9           00534     call ENVIA
+01DD   304E           00535     movlw 'N'
+01DE   0086           00536     movwf PORTB
+01DF   21F9           00537     call ENVIA
+01E0   3045           00538     movlw 'E'
+01E1   0086           00539     movwf PORTB
+01E2   21F9           00540     call ENVIA
+01E3   305A           00541         movlw 'Z'
+01E4   0086           00542     movwf PORTB
+01E5   21F9           00543     call ENVIA
+01E6   0008           00544     return   
+                      00545         
+                      00546     ;Subrutina para inicializar el lcd
+01E7                  00547 INICIA_LCD:
+01E7   1008           00548     bcf PORTD,0      ; RS=0 MODO INSTRUCCION
+01E8   3001           00549     movlw 0x01       ; El comando 0x01 limpia la pantalla en el LCD
+01E9   0086           00550     movwf PORTB
+01EA   21F3           00551     call COMANDO     ; Se da de alta el comando
+01EB   300C           00552     movlw 0x0C       ; Selecciona la primera línea
+01EC   0086           00553     movwf PORTB
+01ED   21F3           00554     call COMANDO     ; Se da de alta el comando
+01EE   303C           00555     movlw 0x3C       ; Se configura el cursor
+01EF   0086           00556     movwf PORTB
+01F0   21F3           00557     call COMANDO     ; Se da de alta el comando
+01F1   1408           00558     bsf PORTD, 0     ; Rs=1 MODO DATO
+01F2   0008           00559     return
+                      00560 
+                      00561     ;Subrutina para enviar comandos
+01F3                  00562 COMANDO:
+01F3   1488           00563     bsf PORTD,1     ; Pone ENABLE en 1
+01F4   2213           00564     call DELAY      ; Tiempo de espera
+01F5   2213           00565     call DELAY
+01F6   1088           00566     bcf PORTD, 1    ; ENABLE=0  
+01F7   2213           00567     call DELAY
+01F8   0008           00568     return     
+                      00569 
+                      00570     ;Subrutina para enviar un dato
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01F9                  00571 ENVIA:
+01F9   1408           00572     bsf PORTD,0     ; RS=1 MODO DATO
+01FA   21F3           00573     call COMANDO    ; Se da de alta el comando
+01FB   0008           00574     return
+                      00575 
+                      00576     ;Configuración Líneal 2 LCD
+01FC                  00577 LINEA2:
+01FC   1008           00578     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
+01FD   30C0           00579     movlw 0xc0      ; Selecciona línea 2 en el LCD
+01FE   0086           00580     movwf PORTB
+01FF   21F3           00581     call COMANDO    ; Se da de alta el comando
+0200   0008           00582     return
+                      00583 
+0201                  00584 CENTRO:
+0201   1008           00585     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
+0202   30C7           00586     movlw 0xc7      ; Selecciona línea 2 en el LCD
+0203   0086           00587     movwf PORTB
+0204   21F3           00588     call COMANDO    ; Se da de alta el comando
+0205   0008           00589     return
+                      00590 
+0206                  00591 RETARDO:
+Warning[202]: Argument out of range.  Least significant bits used.
+0206   3000           00592      movlw cte1    
+0207   00A1           00593      movwf valor1
+Warning[219]: Invalid RAM location specified.
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0208   0080           00594 tres movwf cte2
+0209   00A2           00595      movwf valor2
+Warning[202]: Argument out of range.  Least significant bits used.
+020A   3000           00596 dos  movlw cte3
+020B   00A3           00597      movwf valor3
+Message[305]: Using default destination of 1 (file).
+020C   0BA3           00598 uno  decfsz valor3 
+020D   2A0C           00599      goto uno 
+Message[305]: Using default destination of 1 (file).
+020E   0BA2           00600      decfsz valor2
+020F   2A0A           00601      goto dos
+Message[305]: Using default destination of 1 (file).
+0210   0BA1           00602      decfsz valor1   
+0211   2A08           00603      goto tres
+0212   0008           00604      return
+                      00605 
+                      00606     ; Subrutina de retardo
+0213                  00607 DELAY:          
+0213   30FF           00608     movlw 0xFF
+0214   00B1           00609     movwf val2 
+0215                  00610 ciclo:
+0215   30FF           00611     movlw 0xFF
+0216   00B0           00612     movwf val1
+0217                  00613 ciclo2:
+0217   0BB0           00614     decfsz val1,1
+0218   2A17           00615     goto ciclo2
+0219   0BB1           00616     decfsz val2,1
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+021A   2A15           00617     goto ciclo
+021B   0008           00618     return
+                      00619  END
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 14
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ADCON0                            0000001F
+ADCON1                            0000009F
+ADCS0                             00000006
+ADCS1                             00000007
+ADCS2                             00000006
+ADDEN                             00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADON                              00000000
+ADRESH                            0000001E
+ADRESL                            0000009E
+BCLIE                             00000003
+BCLIF                             00000003
+BF                                00000000
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           0000001D
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CCPR2                             0000001B
+CCPR2H                            0000001C
+CCPR2L                            0000001B
+CENTRO                            00000201
+CHS0                              00000003
+CHS1                              00000004
+CHS2                              00000005
+CICLO                             00000012
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CIS                               00000003
+CKE                               00000006
+CKP                               00000004
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000009C
+CMIE                              00000006
+CMIF                              00000006
+COMANDO                           000001F3
+CREN                              00000004
+CSRC                              00000007
+CVR0                              00000000
+CVR1                              00000001
+CVR2                              00000002
+CVR3                              00000003
+CVRCON                            0000009D
+CVREN                             00000007
+CVROE                             00000006
+CVRR                              00000005
+D                                 00000005
+DATA_ADDRESS                      00000005
+DC                                00000001
+DELAY                             00000213
+D_A                               00000005
+D_NOT_A                           00000005
+EEADR                             0000010D
+EEADRH                            0000010F
+EECON1                            0000018C
+EECON2                            0000018D
+EEDATA                            0000010C
+EEDATH                            0000010E
+EEIE                              00000004
+EEIF                              00000004
+EEPGD                             00000007
+ENVIA                             000001F9
+ESCRIBIR                          00000040
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GCEN                              00000007
+GIE                               00000007
+GO                                00000002
+GO_DONE                           00000002
+GO_NOT_DONE                       00000002
+I2C_DATA                          00000005
+I2C_READ                          00000002
+I2C_START                         00000003
+I2C_STOP                          00000004
+IBF                               00000007
+IBOV                              00000005
+INDF                              00000000
+INICIA_LCD                        000001E7
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 16
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+INICIO                            00000005
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LINEA2                            000001FC
+M1                                0000018E
+M2                                000001B3
+M3                                0000005E
+M4                                000000BB
+M5                                0000003A
+M7                                00000178
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BO                            00000000
+NOT_BOR                           00000000
+NOT_DONE                          00000002
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RC8                           00000006
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_TX8                           00000006
+NOT_W                             00000002
+NOT_WRITE                         00000002
+OBF                               00000006
+OERR                              00000001
+OPTION_REG                        00000081
+P                                 00000004
+PCFG0                             00000000
+PCFG1                             00000001
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PEN                               00000002
+PIE1                              0000008C
+PIE2                              0000008D
+PIR1                              0000000C
+PIR2                              0000000D
+PORTA                             00000005
+PORTB                             00000006
+PORTC                             00000007
+PORTD                             00000008
+PORTE                             00000009
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 17
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PSA                               00000003
+PSPIE                             00000007
+PSPIF                             00000007
+PSPMODE                           00000004
+R                                 00000002
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RC0                               00000000
+RC1                               00000001
+RC2                               00000002
+RC3                               00000003
+RC4                               00000004
+RC5                               00000005
+RC6                               00000006
+RC7                               00000007
+RC8_9                             00000006
+RC9                               00000006
+RCD8                              00000000
+RCEN                              00000003
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RD0                               00000000
+RD1                               00000001
+RD2                               00000002
+RD3                               00000003
+RD4                               00000004
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RE0                               00000000
+RE1                               00000001
+RE2                               00000002
+READ_WRITE                        00000002
+RETARDO                           00000206
+RP0                               00000005
+RP1                               00000006
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 18
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RSEN                              00000001
+RX9                               00000006
+RX9D                              00000000
+R_NOT_W                           00000002
+R_W                               00000002
+S                                 00000003
+SEN                               00000000
+SMP                               00000007
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSPADD                            00000093
+SSPBUF                            00000013
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000094
+START_LCD                         0000002A
+START_LCD1                        00000030
+START_LCD2                        00000033
+START_LCD3                        00000037
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1INSYNC                          00000002
+T1OSCEN                           00000003
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 19
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRISC                             00000087
+TRISC0                            00000000
+TRISC1                            00000001
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000088
+TRISD0                            00000000
+TRISD1                            00000001
+TRISD2                            00000002
+TRISD3                            00000003
+TRISD4                            00000004
+TRISD5                            00000005
+TRISD6                            00000006
+TRISD7                            00000007
+TRISE                             00000089
+TRISE0                            00000000
+TRISE1                            00000001
+TRISE2                            00000002
+TRMT                              00000001
+TX8_9                             00000006
+TX9                               00000006
+TX9D                              00000000
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 20
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+UA                                00000001
+W                                 00000000
+WCOL                              00000007
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_ALL                           00001FFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DEBUG_OFF                        00003FFF
+_DEBUG_ON                         000037FF
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_WRT_1FOURTH                      00003BFF
+_WRT_256                          00003DFF
+_WRT_HALF                         000039FF
+_WRT_OFF                          00003FFF
+_XT_OSC                           00003FFD
+__16F877A                         00000001
+c0                                00000000
+c1                                00000001
+c2                                00000002
+c3                                00000003
+ciclo                             00000215
+MPASM  5.48                       LCDBIEN.ASM   3-27-2019  0:43:26         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ciclo2                            00000217
+cte1                              00000100
+cte2                              00000500
+cte3                              00000600
+dos                               0000020A
+tres                              00000208
+uno                               0000020C
+v0                                00000024
+v1                                00000025
+v2                                00000026
+v3                                00000027
+val1                              00000030
+val2                              00000031
+valor1                            00000021
+valor2                            00000022
+valor3                            00000023
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X----XXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0180 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+01C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0200 : XXXXXXXXXXXXXXXX XXXXXXXXXXXX---- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   536
+Program Memory Words Free:  7656
+
+
+Errors   :     0
+Warnings :     3 reported,     0 suppressed
+Messages :     8 reported,     0 suppressed
+
+

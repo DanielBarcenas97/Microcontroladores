@@ -1,0 +1,52 @@
+MPLINK 4.46, Linker
+Linker Map File - Created Mon Mar 11 15:29:40 2019
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000005    program   0x00006a
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000005    0x000039      
+            54 out of 8454 program addresses used, program memory utilization is 0%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      dos   0x000024    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                     dos2   0x000031    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                   inicio   0x000005    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                    loop2   0x00000b    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                  retardo   0x000020    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                 retardo2   0x00002d    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                     tres   0x000022    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                    tres2   0x00002f    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                      uno   0x000026    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                     uno2   0x000033    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   inicio   0x000005    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                    loop2   0x00000b    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                  retardo   0x000020    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                     tres   0x000022    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                      dos   0x000024    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                      uno   0x000026    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                 retardo2   0x00002d    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                    tres2   0x00002f    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                     dos2   0x000031    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+                     uno2   0x000033    program     static C:\Users\Daniel\Desktop\P2\semaforo.asm
+
+
