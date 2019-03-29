@@ -74,23 +74,23 @@ CICLO:
 ;;;;;;;;;;
 START_LCD:		
     call INICIA_LCD    ;Configura el LCD
-    call M1            ;Muestra Mensaje
+    call M1            ;Muestra Mensaje  "EDGAR DANIEL"
     call LINEA2        ;Configura linea 2
-    call M2            ;Muestra Mensaje
+    call M2            ;Muestra Mensaje  "BARCENAS MARTINEZ"
 	call RETARDO
     goto CICLO
 START_LCD1:		
     call INICIA_LCD    ;Configura el LCD
-    call M3            ;Muestra Mensaje
+    call M3            ;Muestra Mensaje "EDGAR BARCENAS"
     goto CICLO
 START_LCD2:		
     call INICIA_LCD    ;Configura el LCD
-    call LINEA2        ;Configura linea 2
-    call M4            ;Muestra Mensaje
+    call LINEA2        ;Configura linea 2 
+    call M4            ;Muestra Mensaje  "EDGAR BARCENAS"
     goto CICLO
 START_LCD3:		
     call INICIA_LCD    ;Configura el LCD
-    call M5           ;Muestra Mensaje
+    call M5           ;Muestra Mensaje "NAVE"
     goto CICLO
 
 M5:	
@@ -136,52 +136,52 @@ ESCRIBIR:
 ;Mensaje a enviar
 M3: 
     ;Edgar 
-    movlw 'E'          ;Mueve 'H' a W
+    movlw 'E'          ;Mueve 'E' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-     movlw 'D'          ;Mueve 'H' a W
+     movlw 'D'          ;Mueve 'D' a W
+    movwf PORTB        ;Mueve loque hay en W a PORTB
+    call ENVIA 
+	movlw 'G'          ;Mueve 'G' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-	movlw 'G'          ;Mueve 'H' a W
-    movwf PORTB        ;Mueve lo que hay en W a PORTB
-    call ENVIA 
-     movlw 'A'          ;Mueve 'H' a W
+     movlw 'A'          ;Mueve 'A' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA
-	movlw 'R'          ;Mueve 'H' a W
+	movlw 'R'          ;Mueve 'R' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-     movlw ' '          ;Mueve 'H' a W
+     movlw ' '          ;Mueve ' ' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA  
      
-    movlw 'B'          ;Mueve 'H' a W
+    movlw 'B'          ;Mueve 'B' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-     movlw 'A'          ;Mueve 'H' a W
+     movlw 'A'          ;Mueve 'A' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-	movlw 'R'          ;Mueve 'H' a W
+	movlw 'R'          ;Mueve 'R' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-     movlw 'C'          ;Mueve 'H' a W
+     movlw 'C'          ;Mueve 'C' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA
-	movlw 'E'          ;Mueve 'H' a W
+	movlw 'E'          ;Mueve 'E' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-     movlw 'N'          ;Mueve 'H' a W
+     movlw 'N'          ;Mueve 'N' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-	movlw 'A'          ;Mueve 'H' a W
+	movlw 'A'          ;Mueve 'A' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-     movlw 'S'          ;Mueve 'H' a W
+     movlw 'S'          ;Mueve 'S' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
 
-	bcf PORTD,0
-	movlw 0x1C     
+	bcf PORTD,0			;DEZPLAZAMIENTO a la derecha
+	movlw 0x1C     	
     movwf PORTB
     call COMANDO
 	movlw 0x1C     
@@ -233,6 +233,7 @@ M3:
     return
 
 M4:
+	;DEZPLAZAMIENTO a la izquierda. Aqui solo recorro 16 veces.
 	movlw 0x1C     
     movwf PORTB
     call COMANDO
@@ -269,7 +270,7 @@ M4:
 	movlw 0x1C     
     movwf PORTB
     call COMANDO
-	movlw 0x1C     
+	movlw 0x1C      
     movwf PORTB
     call COMANDO
   	movlw 0x1C     
@@ -325,7 +326,8 @@ M4:
      movlw 'S'          ;Mueve 'H' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA 
-
+	
+	;DEZPLAZAMIENTO a la derecha.Corrimiento.
 	bcf PORTD,0
     movlw 0x18     
     movwf PORTB
@@ -428,7 +430,7 @@ M4:
 
 
 M7:
-    movlw 'V'          ;Mueve 'H' a W
+    movlw 'V'          ;Mueve 'V' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA         ;Imprime en LCD
     movlw 'A'
@@ -452,7 +454,7 @@ M7:
     return
 
 M1:
-    movlw 'E'          ;Mueve 'H' a W
+    movlw 'E'          ;Mueve 'E' a W
     movwf PORTB        ;Mueve lo que hay en W a PORTB
     call ENVIA         ;Imprime en LCD
     movlw 'D'
@@ -572,7 +574,6 @@ ENVIA:
     bsf PORTD,0     ; RS=1 MODO DATO
     call COMANDO    ; Se da de alta el comando
     return
-
     ;Configuración Líneal 2 LCD
 LINEA2:
     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
