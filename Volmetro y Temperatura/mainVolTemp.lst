@@ -1,0 +1,2245 @@
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Warning[205]: Found directive in column 1. (PROCESSOR)
+                      00001 PROCESSOR PIC16F877A
+                      00002 #INCLUDE <P16F877A.INC>
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F877A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00566         LIST
+                      00003 
+                      00004 
+                      00005 #DEFINE RS              PORTD,0
+                      00006 #DEFINE RW              PORTD,1
+                      00007 #DEFINE ENABLE  PORTD,2
+                      00008 ;//////////////////////////variables///////////////////////////////
+  00000021            00009 valor1 EQU H'21'                ;
+  00000022            00010 valor2 EQU H'22'                ;
+  00000023            00011 valor3 EQU H'23'                ;
+                      00012 ;---------------------------------------------------------------
+  00000024            00013 guarda equ h'24'                ;registro que almacena el dato de entradA
+                      00014 ;--------------------------------------------------------------
+  00000025            00015 temp equ h'25'                  ;
+  00000026            00016 temp2 equ h'26'                 ;
+                      00017 ;---------------------------------------------------------------
+  00000027            00018 valCent equ h'27'               ;
+  00000028            00019 valDece equ h'28'               ;
+  00000029            00020 valUni  equ h'29'               ;
+  0000002A            00021 valDeci equ h'2A'               ;
+                      00022 ;--------------------------------------------------------------------
+  0000002B            00023 valHexHigh equ h'2B'    ;
+  0000002C            00024 valHexLow equ h'2C'             ;
+                      00025 ;-----------------------------------------------------------------
+  0000002D            00026 val64hex equ h'2D'              ;
+  0000002E            00027 voltaje_h equ h'2E'
+  0000002F            00028 voltaje equ h'2F'
+                      00029 ;---------------------------------------------------------------------
+  00000030            00030 result_high equ h'30'           ;variables usadas al multiplicar y dividir
+  00000031            00031 result_low equ h'31'
+  00000032            00032 resDiv_high equ h'32'
+  00000034            00033 resDiv_low      equ h'34'
+                      00034 
+                      00035 
+                      00036 
+  00000025            00037 CONTADOR EQU 25H
+                      00038 
+0000                  00039         ORG 0
+0000   2805           00040         GOTO INICIO
+0005                  00041         ORG 5
+0005                  00042 INICIO
+                      00043 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0005   0185           00044         CLRF PORTA                      ;limpia puertos
+0006   0186           00045         CLRF PORTB
+0007   0189           00046         CLRF PORTE                      ;
+0008   1683           00047         BSF STATUS,RP0          ;Cambia la banco 1
+0009   1303           00048         BCF STATUS,RP1
+000A   3002           00049         MOVLW 02H                       ;entradas analogicas en A, digitales en E
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000B   009F           00050         MOVWF ADCON1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000C   0186           00051         CLRF TRISB                      ;puerto B como salida
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000D   0188           00052         CLRF TRISD                      ;PORTD como salida para LCD
+000E   3003           00053         movlw 0x03                      
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000F   0089           00054         movwf TRISE                     ;Puerto E como entrada digital
+0010   1283           00055         BCF STATUS,RP0          ;Regresa al banco cero
+                      00056 ;       MOVLW B'11000001'       ;canal 000 de analógica
+                      00057 ;       MOVWF ADCON0
+0011   1008           00058         BCF RS
+0012   1088           00059         BCF RW
+0013   1108           00060         BCF ENABLE
+0014   01A5           00061         CLRF CONTADOR
+0015   20B4           00062         CALL LCD_INIT
+                      00063         
+                      00064 
+0016                  00065 SWITCH
+0016   0809           00066         MOVF PORTE,W
+0017   3901           00067         ANDLW 0X01
+0018   0782           00068         ADDWF PCL,1
+0019   281C           00069         GOTO TEMPERATURA
+001A   2825           00070         GOTO VOLMETRO
+                      00071         
+001B   2816           00072         GOTO SWITCH
+                      00073 
+                      00074 
+001C                  00075 TEMPERATURA
+001C   22E7           00076         CALL LOADCARACTERTEMPERATURA
+001D   30C1           00077         MOVLW B'11000001'       ;canal 000 de analógica
+001E   009F           00078         MOVWF ADCON0
+                      00079         
+001F   202F           00080         CALL LEEDATO
+0020   2036           00081         CALL CENT_DEC_UNI
+0021   2086           00082         CALL A_HEXA
+0022   20EF           00083         CALL MUESTRA_TEMP
+0023   20E2           00084         CALL RETARDO
+0024   2816           00085         GOTO SWITCH
+                      00086 
+0025                  00087 VOLMETRO
+0025   21FA           00088         CALL LOADCARACTERVOLMETRO
+0026   30C9           00089         MOVLW B'11001001'       ;canal 001 de analógica
+0027   009F           00090         MOVWF ADCON0
+0028   202F           00091         CALL LEEDATO
+0029   2093           00092         CALL CONVIERTE_A_VOLTAJE
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+002A   2059           00093         CALL CENT_DEC_UNI_VOL
+002B   2086           00094         CALL A_HEXA
+002C   20F7           00095         CALL MUESTRA_VOLT
+002D   20E2           00096         CALL RETARDO
+002E   2816           00097         GOTO SWITCH
+                      00098 
+                      00099 #INCLUDE "rutinasConvertidor.inc"
+                      00001 ;//////RUTINAS RELACIONADAS AL CONVERTIDOR ANALOGICO DIGITAL//////////////////////////////////
+                      00002 
+002F                  00003 LEEDATO                                                 ;RUTINA QUE RECIBE EL DATO DE ENTRADA DEL CONVER
+                            TIDOR
+002F   151F           00004         BSF ADCON0,2                            ;inicia la conversion leyendo la entrada
+0030   208E           00005         CALL RETARDO20uS
+                      00006 
+0031                  00007 ESPERA                                                  ;espera a que acabe de convertir la entrada
+0031   191F           00008         BTFSC ADCON0,2
+0032   2831           00009         GOTO ESPERA
+                      00010         
+0033   081E           00011         MOVF ADRESH,W                           ;lo que arroja como dato lo guarda a W
+0034   00A4           00012         MOVWF guarda                            ;para moverlo al puerto B como salida
+Warning[203]: Found opcode in column 1. (RETURN)
+0035   0008           00013 RETURN
+                      00014 
+                      00015 ;/////////////////////////////////////////////////////////////////////////
+0036                  00016 CENT_DEC_UNI                                    ;RUTINA USADA EN LA TEMPERATURA
+                      00017                                                                 ;PARA CONVERTIR HEX A DECIMAL
+                      00018 
+0036   01A7           00019         CLRF valCent                            ;limpia registros
+0037   01A8           00020         clrf valDece
+0038   01A9           00021         clrf valUni
+0039   1003           00022         bcf STATUS,C                            ;limpia carry
+003A   0824           00023         movf guarda,W                           ;el resultado de la conversion la guarda en temp
+003B   00A5           00024         movwf temp
+                      00025 
+003C                  00026 resta_centenas                                  
+003C   0825           00027         movf temp,W                                     ;temp2 <- temp , para guardar el valor anterior
+003D   00A6           00028         movwf temp2     
+003E   3064           00029         movlw 0x64      
+003F   02A5           00030         subwf temp,F                            ;le resta 64h 
+0040   1803           00031         BTFSC STATUS,C                          ;checa si fue negativa la resta
+0041   2853           00032         goto inc_centenas                       ;si no, se va a esta rutina
+0042   0826           00033         movf temp2,W                            ;si sí, regresa el valor anterior a temp
+0043   00A5           00034         movwf temp                                      
+                      00035 
+0044                  00036 resta_decenas                                   ;ahora con el valor de decenas
+0044   0825           00037         movf temp,W                                     ;guarda el valor (anterior) en temp2
+0045   00A6           00038         movwf temp2
+0046   300A           00039         movlw 0xA                                       ;resta
+0047   02A5           00040         subwf temp,F                            ;
+0048   1803           00041         BTFSC STATUS,C                          ;checa si fue negativa la resta
+0049   2855           00042         goto inc_decenas                        ;si no, va a inc_decenas
+004A   0826           00043         movf temp2,W                            ;si sí, regresa el valor anterior a temp
+004B   00A5           00044         movwf temp
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00045 
+004C                  00046 resta_unidades                                  ;ahora con las unidades
+004C   0825           00047         movf temp,W
+004D   00A6           00048         movwf temp2
+004E   3001           00049         movlw 01                                        ;resta 1
+004F   02A5           00050         subwf temp,F
+0050   1803           00051         BTFSC STATUS,C                          ;checa si fue negativa la resta
+0051   2857           00052         goto inc_unidades                       ;si no, se va a inc_unidades
+0052   0008           00053         RETURN                                          ;si sí, acaba la conversion y retorna
+                      00054 
+                      00055 
+0053                  00056 inc_centenas                                    ;ya que la resta no fue negativa, incrementa registro de
+                             centenas
+Message[305]: Using default destination of 1 (file).
+0053   0AA7           00057         incf valCent
+0054   283C           00058         goto resta_centenas                     ;regresa a seguir restando
+                      00059 
+0055                  00060 inc_decenas                                             
+Message[305]: Using default destination of 1 (file).
+0055   0AA8           00061         incf valDece                            ;como la resta no fue negativa, incrementa
+0056   2844           00062         goto resta_decenas                      ;y regresa
+                      00063 
+0057                  00064 inc_unidades    
+Message[305]: Using default destination of 1 (file).
+0057   0AA9           00065         incf valUni                                     ;como la resta no fue negativa, incrementa
+0058   284C           00066         goto resta_unidades                     ;y regresa
+                      00067 
+                      00068 
+                      00069 
+                      00070 ;-----------------------------------------------------------------
+0059                  00071 CENT_DEC_UNI_VOL                                ;rutina similar a la anterior pero esta considera una en
+                            trada de mas de 8 bits
+                      00072                                                                 ;por la conversion anterior (multiplicac
+                            ion y division)
+0059   01A7           00073         CLRF valCent
+005A   01A8           00074         clrf valDece
+005B   01A9           00075         clrf valUni
+005C   1003           00076         bcf STATUS,C
+005D   0834           00077         movf resDiv_low,W                       ;mueve la parte baja del resultado
+005E   00A5           00078         movwf temp                                      ;a temp
+                      00079 
+005F                  00080 resta_centenasV
+005F   0825           00081         movf temp,W
+0060   00A6           00082         movwf temp2                                     ;temp2 <- temp , para guardar el valor anterior
+0061   3064           00083         movlw 0x64      
+0062   02A5           00084         subwf temp,F                            ;le resta 64h 
+0063   1803           00085         BTFSC STATUS,C                          ;checa si la resta fue negativa
+0064   287D           00086         goto resta_highV                        ;si no
+0065   2877           00087         goto inc_centenasV                      ;no
+0066   0826           00088         movf temp2,W
+0067   00A5           00089         movwf temp
+                      00090 
+0068                  00091 resta_decenasV
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0068   0825           00092         movf temp,W
+0069   00A6           00093         movwf temp2
+006A   300A           00094         movlw 0xA
+006B   02A5           00095         subwf temp,F
+006C   1803           00096         BTFSC STATUS,C
+006D   2879           00097         goto inc_decenasV
+006E   0826           00098         movf temp2,W
+006F   00A5           00099         movwf temp
+                      00100 
+0070                  00101 resta_unidadesV
+0070   0825           00102         movf temp,W
+0071   00A6           00103         movwf temp2
+0072   3001           00104         movlw 01
+0073   02A5           00105         subwf temp,F
+0074   1803           00106         BTFSC STATUS,C
+0075   287B           00107         goto inc_unidadesV
+0076   0008           00108         RETURN
+                      00109 
+                      00110 
+0077                  00111 inc_centenasV
+Message[305]: Using default destination of 1 (file).
+0077   0AA7           00112         incf valCent
+0078   285F           00113         goto resta_centenasV
+                      00114 
+0079                  00115 inc_decenasV
+Message[305]: Using default destination of 1 (file).
+0079   0AA8           00116         incf valDece
+007A   2868           00117         goto resta_decenasV
+                      00118 
+007B                  00119 inc_unidadesV
+Message[305]: Using default destination of 1 (file).
+007B   0AA9           00120         incf valUni
+007C   2870           00121         goto resta_unidadesV
+                      00122 
+                      00123 ;-----------------------------
+007D                  00124 resta_highV
+Message[305]: Using default destination of 1 (file).
+007D   08B2           00125         movf resDiv_high
+007E   1D03           00126         btfss STATUS,Z
+007F   2883           00127         goto resta_highCentenaV
+0080   0826           00128         movf temp2,W
+0081   00A5           00129         movwf temp
+0082   2868           00130         goto resta_decenasV
+                      00131 
+0083                  00132 resta_highCentenaV
+Message[305]: Using default destination of 1 (file).
+0083   03B2           00133         decf resDiv_high
+Message[305]: Using default destination of 1 (file).
+0084   0AA7           00134         incf valCent
+0085   285F           00135         goto resta_centenasV    
+                      00136 
+                      00137 ;//////////////////////////////////////////////////////////////////////////
+0086                  00138 A_HEXA                                                          ;RUTINA QUE SEPARA LA PARTE ALTA Y BAJA 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                            DEL RESULTADO
+                      00139                                                                         ;HEX PARA SU IMPRESION POSTERIOR
+                             EN EL LCD
+0086   0824           00140         movf guarda,W
+0087   39F0           00141         andlw h'F0'
+0088   00AB           00142         movwf valHexHigh
+Message[305]: Using default destination of 1 (file).
+0089   0EAB           00143         swapf valHexHigh
+                      00144 
+008A   0824           00145         movf guarda,W
+008B   390F           00146         andlw h'0F'
+008C   00AC           00147         movwf valHexLow
+                      00148         
+008D   0008           00149         RETURN
+                      00150 
+                      00151 ;//////////////////////////////////////////////////////////////////////////
+                      00152 
+008E                  00153 RETARDO20uS                             ;SUBRUTINA DE RETARDO DE 20 uS
+008E   3030           00154         MOVLW .48
+008F   00A1           00155         MOVWF valor1
+0090                  00156 uno20u  
+Message[305]: Using default destination of 1 (file).
+0090   0BA1           00157         DECFSZ valor1
+0091   2890           00158         GOTO uno20u
+0092   0008           00159         RETURN
+                      00160 
+                      00161 ;//////////////////////////////////////////////////////////////////////////
+                      00162 
+                      00163 
+                      00164 
+0093                  00165 CONVIERTE_A_VOLTAJE
+                      00166                                                         ;salida=entrada*500/255 = entrada*100/51        
+                                    decimal
+                      00167                                                         ;salida=entrada*1F4/FF  = entrada*64*33         
+                            hexa
+0093   01B0           00168         clrf result_high                ;result_high=resultado de la * parte alta
+0094   01B1           00169         clrf result_low                         ;result_low=resultado de la * parte baja
+0095   3064           00170         movlw 0x64
+0096   00AD           00171         movwf val64hex                  ;val64hex para el conteo de la suma
+                      00172         
+0097                  00173 multiplica 
+0097   0831           00174         movf result_low,W               ;w <- result_low
+0098   0724           00175         addwf guarda,W                  ;w <- w + guarda
+0099   00B1           00176         movwf result_low                ;temp2 <- w
+009A   1803           00177         btfsc STATUS,C                  ;se desbordó?
+Message[305]: Using default destination of 1 (file).
+009B   0AB0           00178         incf result_high                ;si
+009C   1003           00179         bcf STATUS,C                    ;no     
+009D   0BAD           00180         decfsz val64hex,1               ;val64hex <- val64hex - 1
+009E   2897           00181         goto multiplica                 ;no es cero 
+                      00182 
+009F                  00183 divide                                          ;si es cero, salta
+009F   3033           00184         movlw 0x33
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00A0   02B1           00185         subwf result_low,F              ;temp2 <- temp2-33h
+00A1   1C03           00186         btfss STATUS,C                  ;la resta fue negativa?
+Message[305]: Using default destination of 1 (file).
+00A2   03B0           00187         decf result_high                ;si
+00A3   1003           00188         bcf STATUS,C                    ;NO, C=0
+00A4   28AF           00189         goto incrementaDiv              ;y despues salta
+00A5                  00190 sigue
+00A5   0830           00191         movf result_high,w              ;w <- temp
+00A6   1D03           00192         btfss STATUS,Z                  ;la parte alta es cero? (temp == 0 ?)
+00A7   289F           00193         goto divide                             ;no
+00A8   1003           00194         bcf STATUS,C                    ;si
+                      00195 
+00A9                  00196 divideLow                                       ;ya que la parte alta es cero, continua con la parte baj
+                            a
+00A9   3033           00197         movlw 0x33
+00AA   02B1           00198         subwf result_low,F              ;temp2 <- temp2-33h
+00AB   1C03           00199         btfss STATUS,C                  ;la resta fue negativa?
+00AC   0008           00200         RETURN                                  ;si => acabó de dividir y da el resultado en voltaje
+Message[305]: Using default destination of 1 (file).
+00AD   0AB4           00201         incf resDiv_low                 ;no, incrementa y
+00AE   28A9           00202         goto divideLow                  ;vuelve a restar
+                      00203 
+                      00204 
+                      00205 
+00AF                  00206 incrementaDiv
+Message[305]: Using default destination of 1 (file).
+00AF   0AB4           00207         incf resDiv_low                 ;incrementa
+00B0   1D03           00208         btfss STATUS,Z                  ;si la suma fue cero, es decir FF+1=00
+00B1   28A5           00209         goto sigue                              ;no, regresa
+Message[305]: Using default destination of 1 (file).
+00B2   0AB2           00210         incf resDiv_high                ;si, incrementa la parte alta del resultado
+00B3   28A5           00211         goto sigue                              ;y regresa
+                      00100 #INCLUDE "rutinasLcd.inc"
+00B4                  00001 LCD_INIT:
+00B4   1008           00002         BCF RS
+00B5   20D5           00003         CALL RETARDO_5MS
+00B6   3001           00004         MOVLW 01H                                               ;LIMPIA EL DISPLAY
+00B7   0086           00005         MOVWF PORTB
+00B8   20CD           00006         CALL LCD_E
+00B9   20D5           00007         CALL RETARDO_5MS
+                      00008 
+00BA   1008           00009         BCF RS
+00BB   20D5           00010         CALL RETARDO_5MS
+00BC   300C           00011         MOVLW 0CH                                               ;AJUSTA EL FUNCIONAMIENTO
+00BD   0086           00012         MOVWF PORTB
+00BE   20CD           00013         CALL LCD_E
+00BF   20D5           00014         CALL RETARDO_5MS
+                      00015 
+00C0   1008           00016         BCF RS
+00C1   20D5           00017         CALL RETARDO_5MS
+00C2   303C           00018         MOVLW 3CH                                               ;HABILITA EL DISPLAY
+00C3   0086           00019         MOVWF PORTB
+00C4   20CD           00020         CALL LCD_E
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00C5   20D5           00021         CALL RETARDO_5MS
+                      00022 
+00C6   1008           00023         BCF RS
+00C7   20D5           00024         CALL RETARDO_5MS
+00C8   300C           00025         MOVLW B'00001100'                               ;AJUSTA EL MODO DE ENTRADA
+00C9   0086           00026         MOVWF PORTB
+00CA   20CD           00027         CALL LCD_E
+00CB   20D5           00028         CALL RETARDO_5MS
+                      00029         
+00CC   0008           00030         RETURN
+                      00031 ;///////////////////////////////////////////////////////////////////////
+00CD                  00032 LCD_E:
+00CD   1508           00033         BSF ENABLE
+00CE   0000           00034         NOP
+00CF   0000           00035         NOP
+00D0   0000           00036         NOP
+00D1   0000           00037         NOP
+00D2   0000           00038         NOP
+00D3   1108           00039         BCF ENABLE
+00D4   0008           00040         RETURN
+                      00041 
+                      00042 ;//////////////////////////////////////////////////////////////////
+00D5                  00043 RETARDO_5MS:                                    ;SUBRUTINA DE RETARDO
+00D5   3002           00044         movlw .2
+00D6   00A1           00045         movwf valor1
+00D7                  00046 tres 
+00D7   30C8           00047         movlw .200
+00D8   00A2           00048         movwf valor2
+00D9   3052           00049 dos movlw .82
+00DA   00A3           00050         movwf valor3
+Message[305]: Using default destination of 1 (file).
+00DB   0BA3           00051 uno decfsz valor3
+00DC   28DB           00052         goto uno
+Message[305]: Using default destination of 1 (file).
+00DD   0BA2           00053         decfsz valor2
+00DE   28D9           00054         goto dos
+Message[305]: Using default destination of 1 (file).
+00DF   0BA1           00055         decfsz valor1
+00E0   28D7           00056         goto tres
+00E1   0008           00057         return
+                      00058 
+                      00059 ;----------------------------------------------------------
+00E2                  00060 RETARDO                                 ;SUBRUTINAS DE RETARDO
+00E2   3080           00061         movlw 0X80
+00E3   00A1           00062         movwf valor1
+00E4                  00063 tres2 
+00E4   3050           00064         movlw 0X50
+00E5   00A2           00065         movwf valor2
+00E6   3080           00066 dos2 movlw 0X80
+00E7   00A3           00067         movwf valor3
+Message[305]: Using default destination of 1 (file).
+00E8   0BA3           00068 uno2 decfsz valor3
+00E9   28E8           00069         goto uno2
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Message[305]: Using default destination of 1 (file).
+00EA   0BA2           00070         decfsz valor2
+00EB   28E6           00071         goto dos2
+Message[305]: Using default destination of 1 (file).
+00EC   0BA1           00072         decfsz valor1
+00ED   28E4           00073         goto tres2
+00EE   0008           00074         return
+                      00075 ;/////////////////////////////////////////////////////////////////////
+                      00076 
+                      00077 
+00EF                  00078 MUESTRA_TEMP
+                      00079 
+00EF   1008           00080         BCF RS
+00F0   3001           00081         MOVLW B'00000001'
+00F1   0086           00082         MOVWF PORTB
+00F2   20CD           00083         CALL LCD_E
+00F3   20D5           00084         CALL RETARDO_5MS
+00F4   1408           00085         BSF RS
+00F5   20FF           00086         CALL LINEA1                                             ;imprime en el lcd el texto
+00F6   0008           00087         RETURN
+                      00088 ;///////////////////////////////////////////////////////////////////
+                      00089 
+00F7                  00090 MUESTRA_VOLT
+                      00091 
+00F7   1008           00092         BCF RS
+00F8   3001           00093         MOVLW B'00000001'
+00F9   0086           00094         MOVWF PORTB
+00FA   20CD           00095         CALL LCD_E
+00FB   20D5           00096         CALL RETARDO_5MS
+00FC   1408           00097         BSF RS
+00FD   216F           00098         CALL LINEAVOLT                                  ;imprime en el lcd el texto
+00FE   0008           00099         RETURN
+                      00100 
+                      00101 ;//////////////////////////////////////////////////////////////////////////
+                      00102 
+00FF                  00103 LINEA1:
+00FF   1008           00104         BCF RS                                                  ;limpia display
+0100   3002           00105         MOVLW B'00000010'
+0101   0086           00106         MOVWF PORTB
+0102   20CD           00107         CALL LCD_E
+0103   20D5           00108         CALL RETARDO_5MS
+0104   1408           00109         BSF RS
+0105   20D5           00110         CALL RETARDO_5MS
+                      00111  
+0106   3054           00112         MOVLW 'T'                                               ; Print character ""
+0107   0086           00113         MOVWF PORTB
+0108   20CD           00114         CALL LCD_E
+0109   20D5           00115         CALL RETARDO_5MS
+                      00116 
+010A   3065           00117         MOVLW 'e'                                               ; Print character ""
+010B   0086           00118         MOVWF PORTB
+010C   20CD           00119         CALL LCD_E
+010D   20D5           00120         CALL RETARDO_5MS
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00121 
+010E   306D           00122         MOVLW 'm'                                               ; Print character ""
+010F   0086           00123         MOVWF PORTB
+0110   20CD           00124         CALL LCD_E
+0111   20D5           00125         CALL RETARDO_5MS
+                      00126 
+0112   3070           00127         MOVLW 'p'                                               ; Print character ""
+0113   0086           00128         MOVWF PORTB
+0114   20CD           00129         CALL LCD_E
+0115   20D5           00130         CALL RETARDO_5MS
+                      00131 
+                      00132 
+0116   303A           00133         MOVLW b'00111010'                               ; Print character ":"
+0117   0086           00134         MOVWF PORTB
+0118   20CD           00135         CALL LCD_E
+0119   20D5           00136         CALL RETARDO_5MS
+                      00137 
+                      00138 
+011A   0828           00139         MOVF valDece,W                                  ;temperatura parte de las decenas
+011B   3E30           00140         addlw 0x30
+011C   0086           00141         MOVWF PORTB
+011D   20CD           00142         CALL LCD_E
+011E   20D5           00143         CALL RETARDO_5MS
+                      00144 
+011F   0829           00145         MOVF valUni,W                                   ;temperatura parte de las unidades
+0120   3E30           00146         addlw 0x30
+0121   0086           00147         MOVWF PORTB
+0122   20CD           00148         CALL LCD_E
+0123   20D5           00149         CALL RETARDO_5MS
+                      00150 
+                      00151 
+0124   30DF           00152         MOVLW b'11011111'                               ; Print character "°"
+0125   0086           00153         MOVWF PORTB
+0126   20CD           00154         CALL LCD_E
+0127   20D5           00155         CALL RETARDO_5MS
+                      00156 
+0128   3043           00157         MOVLW 'C'                                               ; Print character "C" para centigrados
+0129   0086           00158         MOVWF PORTB
+012A   20CD           00159         CALL LCD_E
+012B   20D5           00160         CALL RETARDO_5MS
+                      00161 
+012C   3020           00162         MOVLW ' '                                               ; Print character "°"
+012D   0086           00163         MOVWF PORTB
+012E   20CD           00164         CALL LCD_E
+012F   20D5           00165         CALL RETARDO_5MS
+                      00166 
+0130   3020           00167         MOVLW ' '                                               ; Print character "°"
+0131   0086           00168         MOVWF PORTB
+0132   20CD           00169         CALL LCD_E
+0133   20D5           00170         CALL RETARDO_5MS
+                      00171 
+0134   2441           00172         CALL ELIJE_FIGURA_TEMP                  ;imprime la figura para la temperatura dependiendo del v
+                            alor
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00173 
+0135   3020           00174         MOVLW ' '                                               ; Print character "°"
+0136   0086           00175         MOVWF PORTB
+0137   20CD           00176         CALL LCD_E
+0138   20D5           00177         CALL RETARDO_5MS
+                      00178 
+0139   1008           00179         BCF RS
+013A   30C0           00180         MOVLW 0xC0                                              ;salto de linea
+013B   0086           00181         MOVWF PORTB
+013C   20CD           00182         CALL LCD_E
+013D   20D5           00183         CALL RETARDO_5MS
+013E   1408           00184         BSF RS
+013F   20D5           00185         CALL RETARDO_5MS
+                      00186 
+0140   3048           00187         MOVLW 'H'                                               ; Print character ""
+0141   0086           00188         MOVWF PORTB
+0142   20CD           00189         CALL LCD_E
+0143   20D5           00190         CALL RETARDO_5MS
+0144   3045           00191         MOVLW 'E'                                               ; Print character ""
+0145   0086           00192         MOVWF PORTB
+0146   20CD           00193         CALL LCD_E
+0147   20D5           00194         CALL RETARDO_5MS
+0148   3058           00195         MOVLW 'X'                                               ; Print character ""
+0149   0086           00196         MOVWF PORTB
+014A   20CD           00197         CALL LCD_E
+014B   20D5           00198         CALL RETARDO_5MS
+014C   303A           00199         MOVLW ':'                                               ; Print character ""
+014D   0086           00200         MOVWF PORTB
+014E   20CD           00201         CALL LCD_E
+014F   20D5           00202         CALL RETARDO_5MS
+                      00203 ;------------------------------PARA VER EL VALOR SI ES NUMERO O LETRA-----------
+                      00204 
+0150   082B           00205         movf valHexHigh,W                               ;compara si es letra o numero
+0151   3C09           00206         sublw 0x9
+0152   1803           00207         BTFSC STATUS,C
+0153   2963           00208         GOTO menorHigh                                  ;si fue letra salta a menorHigh
+                      00209 
+0154   082B           00210         movf valHexHigh,W                               ;valor parte alta del resultado en hex, si fue l
+                            etra
+0155   3E37           00211         addlw 0x37
+0156   0086           00212         MOVWF PORTB
+0157   20CD           00213         CALL LCD_E
+0158   20D5           00214         CALL RETARDO_5MS
+                      00215 
+0159                  00216 contImprimiendo                                         ;ahora con la parte baja, compara si es numero o
+                             letra
+0159   082C           00217         movf valHexLow,W
+015A   3C09           00218         sublw 0x9
+015B   1803           00219         BTFSC STATUS,C
+015C   2969           00220         GOTO menorLow                                   ;si fue numero salta a menorLow
+                      00221 
+015D   082C           00222         movf valHexLow,W                                ;si fue letra
+015E   3E37           00223         addlw 0x37
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+015F   0086           00224         MOVWF PORTB
+0160   20CD           00225         CALL LCD_E
+0161   20D5           00226         CALL RETARDO_5MS
+0162                  00227 continua                                                        ;para regresar al main
+0162   0008           00228         RETURN
+                      00229 
+0163                  00230 menorHigh
+0163   082B           00231         movf valHexHigh,W                               ;valor parte alta del resultado en hex, si fue n
+                            umero
+0164   3E30           00232         addlw 0x30
+0165   0086           00233         MOVWF PORTB
+0166   20CD           00234         CALL LCD_E
+0167   20D5           00235         CALL RETARDO_5MS
+0168   2959           00236         goto contImprimiendo    
+0169                  00237 menorLow                                                        ;valor parte baja del resultado en hex, 
+                            si fue numero
+0169   082C           00238         movf valHexLow,W
+016A   3E30           00239         addlw 0x30
+016B   0086           00240         MOVWF PORTB
+016C   20CD           00241         CALL LCD_E
+016D   20D5           00242         CALL RETARDO_5MS
+016E   2962           00243         goto continua
+                      00244 
+                      00245 
+                      00246 
+                      00247 
+                      00248 
+                      00249 ;/////////////////////////////////////////////////////////////////
+                      00250 
+016F                  00251 LINEAVOLT
+016F   1008           00252         BCF RS
+0170   3002           00253         MOVLW B'00000010'                               ;limpia display
+0171   0086           00254         MOVWF PORTB
+0172   20CD           00255         CALL LCD_E
+0173   20D5           00256         CALL RETARDO_5MS
+0174   1408           00257         BSF RS
+0175   20D5           00258         CALL RETARDO_5MS
+                      00259  
+0176   3056           00260         MOVLW 'V'                                               ; Print character ""
+0177   0086           00261         MOVWF PORTB
+0178   20CD           00262         CALL LCD_E
+0179   20D5           00263         CALL RETARDO_5MS
+                      00264 
+017A   306F           00265         MOVLW 'o'                                               ; Print character ""
+017B   0086           00266         MOVWF PORTB
+017C   20CD           00267         CALL LCD_E
+017D   20D5           00268         CALL RETARDO_5MS
+                      00269 
+017E   306C           00270         MOVLW 'l'                                               ; Print character ""
+017F   0086           00271         MOVWF PORTB
+0180   20CD           00272         CALL LCD_E
+0181   20D5           00273         CALL RETARDO_5MS
+                      00274 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00275 
+0182   303A           00276         MOVLW ':'                                               ; Print character ""
+0183   0086           00277         MOVWF PORTB                     
+0184   20CD           00278         CALL LCD_E
+0185   20D5           00279         CALL RETARDO_5MS
+                      00280 
+                      00281 
+0186   0827           00282         MOVF valCent,W                                  ;temperatura en volts
+0187   3E30           00283         addlw 0x30
+0188   0086           00284         MOVWF PORTB
+0189   20CD           00285         CALL LCD_E
+018A   20D5           00286         CALL RETARDO_5MS
+                      00287         
+018B   302E           00288         MOVLW '.'                                               ; Print character ""
+018C   0086           00289         MOVWF PORTB             
+018D   20CD           00290         CALL LCD_E
+018E   20D5           00291         CALL RETARDO_5MS
+                      00292 
+018F   0828           00293         MOVF valDece,W                                  ;temperatura, parte decimal
+0190   3E30           00294         addlw 0x30
+0191   0086           00295         MOVWF PORTB
+0192   20CD           00296         CALL LCD_E
+0193   20D5           00297         CALL RETARDO_5MS
+                      00298 
+0194   0829           00299         MOVF valUni,W                                   ;temperatura, parte decimal
+0195   3E30           00300         addlw 0x30
+0196   0086           00301         MOVWF PORTB
+0197   20CD           00302         CALL LCD_E
+0198   20D5           00303         CALL RETARDO_5MS
+                      00304 
+                      00305 
+0199   305B           00306         MOVLW '['                                               ; Print character ""
+019A   0086           00307         MOVWF PORTB
+019B   20CD           00308         CALL LCD_E
+019C   20D5           00309         CALL RETARDO_5MS
+                      00310 
+019D   3056           00311         MOVLW 'V'                                               ; Print character ""
+019E   0086           00312         MOVWF PORTB
+019F   20CD           00313         CALL LCD_E
+01A0   20D5           00314         CALL RETARDO_5MS
+                      00315 
+01A1   305D           00316         MOVLW ']'                                               ; Print character ""
+01A2   0086           00317         MOVWF PORTB
+01A3   20CD           00318         CALL LCD_E
+01A4   20D5           00319         CALL RETARDO_5MS
+                      00320 
+                      00321 ;-------------------------------IMPRIME PARTE SUPERIOR DE LA PILA-----------------------------------
+01A5   3020           00322         MOVLW ' '                                               ; Print character ""
+01A6   0086           00323         MOVWF PORTB
+01A7   20CD           00324         CALL LCD_E
+01A8   20D5           00325         CALL RETARDO_5MS
+                      00326 
+                      00327 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01A9   23F4           00328         CALL ELIJE_FIGURA_VOLMETRO_ALTA 
+                      00329 ;----------------------------------------------------------------------------
+                      00330 
+01AA   1008           00331         BCF RS                  
+01AB   30C0           00332         MOVLW 0xC0                                              ;SALTO DE LINEA
+01AC   0086           00333         MOVWF PORTB
+01AD   20CD           00334         CALL LCD_E
+01AE   20D5           00335         CALL RETARDO_5MS
+01AF   1408           00336         BSF RS
+01B0   20D5           00337         CALL RETARDO_5MS
+                      00338 
+01B1   3048           00339         MOVLW 'H'                                               ; Print character ""
+01B2   0086           00340         MOVWF PORTB
+01B3   20CD           00341         CALL LCD_E
+01B4   20D5           00342         CALL RETARDO_5MS
+01B5   3045           00343         MOVLW 'E'                                               ; Print character ""
+01B6   0086           00344         MOVWF PORTB
+01B7   20CD           00345         CALL LCD_E
+01B8   20D5           00346         CALL RETARDO_5MS
+01B9   3058           00347         MOVLW 'X'                                               ; Print character ""
+01BA   0086           00348         MOVWF PORTB
+01BB   20CD           00349         CALL LCD_E
+01BC   20D5           00350         CALL RETARDO_5MS
+01BD   303A           00351         MOVLW ':'                                               ; Print character ""
+01BE   0086           00352         MOVWF PORTB
+01BF   20CD           00353         CALL LCD_E
+01C0   20D5           00354         CALL RETARDO_5MS
+                      00355 
+                      00356 ;------------------------valor voltaje en hexa de la entrada, NO del equivalente a decimal
+01C1   082B           00357         movf valHexHigh,W                               
+01C2   3C09           00358         sublw 0x9
+01C3   1803           00359         BTFSC STATUS,C
+01C4   29D4           00360         GOTO menorHighVOL                               ;si la parte alta fue numero salta a menorHighVO
+                            L
+                      00361 
+01C5   082B           00362         movf valHexHigh,W                               ;si la parte alta fue letra
+01C6   3E37           00363         addlw 0x37
+01C7   0086           00364         MOVWF PORTB
+01C8   20CD           00365         CALL LCD_E
+01C9   20D5           00366         CALL RETARDO_5MS
+                      00367 
+01CA                  00368 contImprimiendoVOL                                      ;continua con la parte baja
+01CA   082C           00369         movf valHexLow,W
+01CB   3C09           00370         sublw 0x9
+01CC   1803           00371         BTFSC STATUS,C
+01CD   29DA           00372         GOTO menorLowVOL                                ;si fue numero salta a menorLowVOL
+                      00373 
+01CE   082C           00374         movf valHexLow,W                                ;si fue letra
+01CF   3E37           00375         addlw 0x37
+01D0   0086           00376         MOVWF PORTB
+01D1   20CD           00377         CALL LCD_E
+01D2   20D5           00378         CALL RETARDO_5MS
+01D3   29E0           00379         GOTO continuaVOL
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00380 
+01D4                  00381 menorHighVOL                                            ;si fue numero la parte alta
+01D4   082B           00382         movf valHexHigh,W
+01D5   3E30           00383         addlw 0x30
+01D6   0086           00384         MOVWF PORTB
+01D7   20CD           00385         CALL LCD_E
+01D8   20D5           00386         CALL RETARDO_5MS
+01D9   29CA           00387         goto contImprimiendoVOL                 ;regresa para comparar la parte baja
+                      00388 
+01DA                  00389 menorLowVOL                                                     ;si la parte baja fue numero
+01DA   082C           00390         movf valHexLow,W
+01DB   3E30           00391         addlw 0x30
+01DC   0086           00392         MOVWF PORTB
+01DD   20CD           00393         CALL LCD_E
+01DE   20D5           00394         CALL RETARDO_5MS
+01DF   29E0           00395         goto continuaVOL                                ;acabó con la parte baja, finaliza regresando 
+                      00396 
+                      00397 
+                      00398 ;-----------------CONTINUA IMPRIMIENDO PARTE BAJA DE LA PILA-------------------------------
+01E0                  00399 continuaVOL
+01E0   3020           00400         MOVLW ' '                                               ; Print character ""
+01E1   0086           00401         MOVWF PORTB
+01E2   20CD           00402         CALL LCD_E
+01E3   20D5           00403         CALL RETARDO_5MS
+                      00404 
+01E4   3020           00405         MOVLW ' '                                               ; Print character ""
+01E5   0086           00406         MOVWF PORTB
+01E6   20CD           00407         CALL LCD_E
+01E7   20D5           00408         CALL RETARDO_5MS
+                      00409 
+01E8   3020           00410         MOVLW ' '                                               ; Print character ""
+01E9   0086           00411         MOVWF PORTB
+01EA   20CD           00412         CALL LCD_E
+01EB   20D5           00413         CALL RETARDO_5MS
+                      00414 
+01EC   3020           00415         MOVLW ' '                                               ; Print character ""
+01ED   0086           00416         MOVWF PORTB
+01EE   20CD           00417         CALL LCD_E
+01EF   20D5           00418         CALL RETARDO_5MS
+01F0   3020           00419         MOVLW ' '                                               ; Print character ""
+01F1   0086           00420         MOVWF PORTB
+01F2   20CD           00421         CALL LCD_E
+01F3   20D5           00422         CALL RETARDO_5MS
+                      00423 
+01F4   3020           00424         MOVLW ' '                                               ; Print character ""
+01F5   0086           00425         MOVWF PORTB
+01F6   20CD           00426         CALL LCD_E
+01F7   20D5           00427         CALL RETARDO_5MS
+                      00428 
+01F8   2409           00429         CALL ELIJE_FIGURA_VOLMETRO_BAJO         ;para imprimir la parte baja de la pila
+                      00430 
+01F9   0008           00431         RETURN
+                      00432 ;///////////////////////////////////////////////////////////////////
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00101 #include "caracterPer.inc"
+                      00001 ;////////////////////////////////CARACTER DEL VOLMETRO///////////////////////
+                      00002 
+01FA                  00003 LOADCARACTERVOLMETRO                            ;CARGA LA PILA
+                      00004 
+01FA   1008           00005         BCF RS
+01FB   3040           00006         MOVLW B'01000000'                               ;comando para escribir en la CGRAM
+01FC   0086           00007         MOVWF PORTB
+01FD   20CD           00008         CALL LCD_E
+01FE   20D5           00009         CALL RETARDO_5MS
+01FF   1408           00010         BSF RS
+                      00011 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN------------
+0200   3000           00012         MOVLW H'00' ;                                   ;IMAGEN SUPERIOR 0% Y 25%
+0201   0086           00013         MOVWF PORTB
+0202   20CD           00014         CALL LCD_E
+0203   20D5           00015         CALL RETARDO_5MS
+0204   300E           00016         MOVLW H'0E' ; 
+0205   0086           00017         MOVWF PORTB
+0206   20CD           00018         CALL LCD_E
+0207   20D5           00019         CALL RETARDO_5MS
+0208   3011           00020         MOVLW H'11' ; 
+0209   0086           00021         MOVWF PORTB
+020A   20CD           00022         CALL LCD_E
+020B   20D5           00023         CALL RETARDO_5MS
+020C   3011           00024         MOVLW H'11' ; 
+020D   0086           00025         MOVWF PORTB
+020E   20CD           00026         CALL LCD_E
+020F   20D5           00027         CALL RETARDO_5MS
+0210   3011           00028         MOVLW H'11' ; 
+0211   0086           00029         MOVWF PORTB
+0212   20CD           00030         CALL LCD_E
+0213   20D5           00031         CALL RETARDO_5MS
+0214   3011           00032         MOVLW H'11' ; 
+0215   0086           00033         MOVWF PORTB
+0216   20CD           00034         CALL LCD_E
+0217   20D5           00035         CALL RETARDO_5MS
+0218   3011           00036         MOVLW H'11' ; 
+0219   0086           00037         MOVWF PORTB
+021A   20CD           00038         CALL LCD_E
+021B   20D5           00039         CALL RETARDO_5MS
+021C   3011           00040         MOVLW H'11' ; 
+021D   0086           00041         MOVWF PORTB
+021E   20CD           00042         CALL LCD_E
+021F   20D5           00043         CALL RETARDO_5MS
+                      00044 
+                      00045 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 2------------
+0220   3000           00046         MOVLW H'00' ;                                           ;IMAGEN SUPERIOR 50% 
+0221   0086           00047         MOVWF PORTB
+0222   20CD           00048         CALL LCD_E
+0223   20D5           00049         CALL RETARDO_5MS
+0224   300E           00050         MOVLW H'0E' ; 
+0225   0086           00051         MOVWF PORTB
+0226   20CD           00052         CALL LCD_E
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0227   20D5           00053         CALL RETARDO_5MS
+0228   3011           00054         MOVLW H'11' ; 
+0229   0086           00055         MOVWF PORTB
+022A   20CD           00056         CALL LCD_E
+022B   20D5           00057         CALL RETARDO_5MS
+022C   3011           00058         MOVLW H'11' ; 
+022D   0086           00059         MOVWF PORTB
+022E   20CD           00060         CALL LCD_E
+022F   20D5           00061         CALL RETARDO_5MS
+0230   3011           00062         MOVLW H'11' ; 
+0231   0086           00063         MOVWF PORTB
+0232   20CD           00064         CALL LCD_E
+0233   20D5           00065         CALL RETARDO_5MS
+0234   3011           00066         MOVLW H'11' ; 
+0235   0086           00067         MOVWF PORTB
+0236   20CD           00068         CALL LCD_E
+0237   20D5           00069         CALL RETARDO_5MS
+0238   3013           00070         MOVLW H'13' ; 
+0239   0086           00071         MOVWF PORTB
+023A   20CD           00072         CALL LCD_E
+023B   20D5           00073         CALL RETARDO_5MS
+023C   3017           00074         MOVLW H'17' ; 
+023D   0086           00075         MOVWF PORTB
+023E   20CD           00076         CALL LCD_E
+023F   20D5           00077         CALL RETARDO_5MS
+                      00078 
+                      00079 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 3------------
+0240   3000           00080         MOVLW H'00' ;                                           ;IMAGEN SUPERIOR 75%
+0241   0086           00081         MOVWF PORTB
+0242   20CD           00082         CALL LCD_E
+0243   20D5           00083         CALL RETARDO_5MS
+0244   300E           00084         MOVLW H'0E' ; 
+0245   0086           00085         MOVWF PORTB
+0246   20CD           00086         CALL LCD_E
+0247   20D5           00087         CALL RETARDO_5MS
+0248   3011           00088         MOVLW H'11' ; 
+0249   0086           00089         MOVWF PORTB
+024A   20CD           00090         CALL LCD_E
+024B   20D5           00091         CALL RETARDO_5MS
+024C   3011           00092         MOVLW H'11' ; 
+024D   0086           00093         MOVWF PORTB
+024E   20CD           00094         CALL LCD_E
+024F   20D5           00095         CALL RETARDO_5MS
+0250   3013           00096         MOVLW H'13' ; 
+0251   0086           00097         MOVWF PORTB
+0252   20CD           00098         CALL LCD_E
+0253   20D5           00099         CALL RETARDO_5MS
+0254   3017           00100         MOVLW H'17' ; 
+0255   0086           00101         MOVWF PORTB
+0256   20CD           00102         CALL LCD_E
+0257   20D5           00103         CALL RETARDO_5MS
+0258   301F           00104         MOVLW H'1F' ; 
+0259   0086           00105         MOVWF PORTB
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+025A   20CD           00106         CALL LCD_E
+025B   20D5           00107         CALL RETARDO_5MS
+025C   301F           00108         MOVLW H'1F' ; 
+025D   0086           00109         MOVWF PORTB
+025E   20CD           00110         CALL LCD_E
+025F   20D5           00111         CALL RETARDO_5MS
+                      00112 
+                      00113 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 4------------
+0260   3000           00114         MOVLW H'00' ;                                   ;IMAGEN SUPERIOR 100%
+0261   0086           00115         MOVWF PORTB
+0262   20CD           00116         CALL LCD_E
+0263   20D5           00117         CALL RETARDO_5MS
+0264   300E           00118         MOVLW H'0E' ; 
+0265   0086           00119         MOVWF PORTB
+0266   20CD           00120         CALL LCD_E
+0267   20D5           00121         CALL RETARDO_5MS
+0268   301F           00122         MOVLW H'1F' ; 
+0269   0086           00123         MOVWF PORTB
+026A   20CD           00124         CALL LCD_E
+026B   20D5           00125         CALL RETARDO_5MS
+026C   301F           00126         MOVLW H'1F' ; 
+026D   0086           00127         MOVWF PORTB
+026E   20CD           00128         CALL LCD_E
+026F   20D5           00129         CALL RETARDO_5MS
+0270   301F           00130         MOVLW H'1F' ; 
+0271   0086           00131         MOVWF PORTB
+0272   20CD           00132         CALL LCD_E
+0273   20D5           00133         CALL RETARDO_5MS
+0274   301F           00134         MOVLW H'1F' ; 
+0275   0086           00135         MOVWF PORTB
+0276   20CD           00136         CALL LCD_E
+0277   20D5           00137         CALL RETARDO_5MS
+0278   301F           00138         MOVLW H'1F' ; 
+0279   0086           00139         MOVWF PORTB
+027A   20CD           00140         CALL LCD_E
+027B   20D5           00141         CALL RETARDO_5MS
+027C   301F           00142         MOVLW H'1F' ; 
+027D   0086           00143         MOVWF PORTB
+027E   20CD           00144         CALL LCD_E
+027F   20D5           00145         CALL RETARDO_5MS
+                      00146 
+                      00147 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 5------------
+0280   3011           00148         MOVLW H'11' ;                                   ;IMAGEN INFERIOR 0%
+0281   0086           00149         MOVWF PORTB
+0282   20CD           00150         CALL LCD_E
+0283   20D5           00151         CALL RETARDO_5MS
+0284   3011           00152         MOVLW H'11' ; 
+0285   0086           00153         MOVWF PORTB
+0286   20CD           00154         CALL LCD_E
+0287   20D5           00155         CALL RETARDO_5MS
+0288   3011           00156         MOVLW H'11' ; 
+0289   0086           00157         MOVWF PORTB
+028A   20CD           00158         CALL LCD_E
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+028B   20D5           00159         CALL RETARDO_5MS
+028C   3011           00160         MOVLW H'11' ; 
+028D   0086           00161         MOVWF PORTB
+028E   20CD           00162         CALL LCD_E
+028F   20D5           00163         CALL RETARDO_5MS
+0290   3011           00164         MOVLW H'11' ; 
+0291   0086           00165         MOVWF PORTB
+0292   20CD           00166         CALL LCD_E
+0293   20D5           00167         CALL RETARDO_5MS
+0294   3011           00168         MOVLW H'11' ; 
+0295   0086           00169         MOVWF PORTB
+0296   20CD           00170         CALL LCD_E
+0297   20D5           00171         CALL RETARDO_5MS
+0298   3011           00172         MOVLW H'11' ; 
+0299   0086           00173         MOVWF PORTB
+029A   20CD           00174         CALL LCD_E
+029B   20D5           00175         CALL RETARDO_5MS
+029C   301F           00176         MOVLW H'1F' ; 
+029D   0086           00177         MOVWF PORTB
+029E   20CD           00178         CALL LCD_E
+029F   20D5           00179         CALL RETARDO_5MS
+                      00180 
+                      00181 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 6------------
+02A0   3011           00182         MOVLW H'11' ;                                   ;IMAGEN INFERIOR 25%
+02A1   0086           00183         MOVWF PORTB
+02A2   20CD           00184         CALL LCD_E
+02A3   20D5           00185         CALL RETARDO_5MS
+02A4   3011           00186         MOVLW H'11' ; 
+02A5   0086           00187         MOVWF PORTB
+02A6   20CD           00188         CALL LCD_E
+02A7   20D5           00189         CALL RETARDO_5MS
+02A8   3011           00190         MOVLW H'11' ; 
+02A9   0086           00191         MOVWF PORTB
+02AA   20CD           00192         CALL LCD_E
+02AB   20D5           00193         CALL RETARDO_5MS
+02AC   3011           00194         MOVLW H'11' ; 
+02AD   0086           00195         MOVWF PORTB
+02AE   20CD           00196         CALL LCD_E
+02AF   20D5           00197         CALL RETARDO_5MS
+02B0   3013           00198         MOVLW H'13' ; 
+02B1   0086           00199         MOVWF PORTB
+02B2   20CD           00200         CALL LCD_E
+02B3   20D5           00201         CALL RETARDO_5MS
+02B4   3017           00202         MOVLW H'17' ; 
+02B5   0086           00203         MOVWF PORTB
+02B6   20CD           00204         CALL LCD_E
+02B7   20D5           00205         CALL RETARDO_5MS
+02B8   301F           00206         MOVLW H'1F' ; 
+02B9   0086           00207         MOVWF PORTB
+02BA   20CD           00208         CALL LCD_E
+02BB   20D5           00209         CALL RETARDO_5MS
+02BC   301F           00210         MOVLW H'1F' ; 
+02BD   0086           00211         MOVWF PORTB
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+02BE   20CD           00212         CALL LCD_E
+02BF   20D5           00213         CALL RETARDO_5MS
+                      00214 
+                      00215 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 7------------
+02C0   3017           00216         MOVLW H'17' ;                                           ;IMAGEN INFERIOR 50%
+02C1   0086           00217         MOVWF PORTB
+02C2   20CD           00218         CALL LCD_E
+02C3   20D5           00219         CALL RETARDO_5MS
+02C4   30FF           00220         MOVLW H'FF' ; 
+02C5   0086           00221         MOVWF PORTB
+02C6   20CD           00222         CALL LCD_E
+02C7   20D5           00223         CALL RETARDO_5MS
+02C8   30FF           00224         MOVLW H'FF' ; 
+02C9   0086           00225         MOVWF PORTB
+02CA   20CD           00226         CALL LCD_E
+02CB   20D5           00227         CALL RETARDO_5MS
+02CC   30FF           00228         MOVLW H'FF' ; 
+02CD   0086           00229         MOVWF PORTB
+02CE   20CD           00230         CALL LCD_E
+02CF   20D5           00231         CALL RETARDO_5MS
+02D0   30FF           00232         MOVLW H'FF'; 
+02D1   0086           00233         MOVWF PORTB
+02D2   20CD           00234         CALL LCD_E
+02D3   20D5           00235         CALL RETARDO_5MS
+02D4   30FF           00236         MOVLW H'FF' ; 
+02D5   0086           00237         MOVWF PORTB
+02D6   20CD           00238         CALL LCD_E
+02D7   20D5           00239         CALL RETARDO_5MS
+02D8   30FF           00240         MOVLW H'FF'; 
+02D9   0086           00241         MOVWF PORTB
+02DA   20CD           00242         CALL LCD_E
+02DB   20D5           00243         CALL RETARDO_5MS
+02DC   30FF           00244         MOVLW H'FF'; 
+02DD   0086           00245         MOVWF PORTB
+02DE   20CD           00246         CALL LCD_E
+02DF   20D5           00247         CALL RETARDO_5MS
+                      00248 
+                      00249 
+                      00250 ;-------------------SALE-------------------------
+02E0   1008           00251         BCF RS
+02E1   3001           00252         MOVLW B'00000001'
+02E2   0086           00253         MOVWF PORTB
+02E3   20CD           00254         CALL LCD_E
+02E4   20D5           00255         CALL RETARDO_5MS
+02E5   1408           00256         BSF RS
+                      00257 
+Warning[203]: Found opcode in column 1. (RETURN)
+02E6   0008           00258 RETURN
+                      00259 
+                      00260 
+                      00261 ;////////////////////////////////CARACTER DEL TERMISTOR///////////////////////
+                      00262 
+                      00263 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+02E7                  00264 LOADCARACTERTEMPERATURA                         ;CARGA EL TRIANGULO
+                      00265 
+                      00266         
+02E7   1008           00267         BCF RS
+02E8   3040           00268         MOVLW B'01000000'                               ;comando para escribir en la CGRAM
+02E9   0086           00269         MOVWF PORTB
+02EA   20CD           00270         CALL LCD_E
+02EB   20D5           00271         CALL RETARDO_5MS
+02EC   1408           00272         BSF RS
+                      00273 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 1------------
+02ED   301F           00274         MOVLW H'1F' ;                                                   ;IMAGEN IZQ 0%
+02EE   0086           00275         MOVWF PORTB
+02EF   20CD           00276         CALL LCD_E
+02F0   20D5           00277         CALL RETARDO_5MS
+02F1   3010           00278         MOVLW H'10' ; 
+02F2   0086           00279         MOVWF PORTB
+02F3   20CD           00280         CALL LCD_E
+02F4   20D5           00281         CALL RETARDO_5MS
+02F5   3008           00282         MOVLW H'08' ; 
+02F6   0086           00283         MOVWF PORTB
+02F7   20CD           00284         CALL LCD_E
+02F8   20D5           00285         CALL RETARDO_5MS
+02F9   3004           00286         MOVLW H'04' ; 
+02FA   0086           00287         MOVWF PORTB
+02FB   20CD           00288         CALL LCD_E
+02FC   20D5           00289         CALL RETARDO_5MS
+02FD   3004           00290         MOVLW H'04' ; 
+02FE   0086           00291         MOVWF PORTB
+02FF   20CD           00292         CALL LCD_E
+0300   20D5           00293         CALL RETARDO_5MS
+0301   3002           00294         MOVLW H'02' ; 
+0302   0086           00295         MOVWF PORTB
+0303   20CD           00296         CALL LCD_E
+0304   20D5           00297         CALL RETARDO_5MS
+0305   3002           00298         MOVLW H'02' ; 
+0306   0086           00299         MOVWF PORTB
+0307   20CD           00300         CALL LCD_E
+0308   20D5           00301         CALL RETARDO_5MS
+0309   3001           00302         MOVLW H'01' ; 
+030A   0086           00303         MOVWF PORTB
+030B   20CD           00304         CALL LCD_E
+030C   20D5           00305         CALL RETARDO_5MS
+                      00306 
+                      00307 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 2------------
+030D   301F           00308         MOVLW H'1F' ;                                           ;IMAGEN DERECHA 0%
+030E   0086           00309         MOVWF PORTB
+030F   20CD           00310         CALL LCD_E
+0310   20D5           00311         CALL RETARDO_5MS
+0311   3001           00312         MOVLW H'01' ; 
+0312   0086           00313         MOVWF PORTB
+0313   20CD           00314         CALL LCD_E
+0314   20D5           00315         CALL RETARDO_5MS
+0315   3002           00316         MOVLW H'02' ; 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0316   0086           00317         MOVWF PORTB
+0317   20CD           00318         CALL LCD_E
+0318   20D5           00319         CALL RETARDO_5MS
+0319   3004           00320         MOVLW H'04' ; 
+031A   0086           00321         MOVWF PORTB
+031B   20CD           00322         CALL LCD_E
+031C   20D5           00323         CALL RETARDO_5MS
+031D   3004           00324         MOVLW H'04' ; 
+031E   0086           00325         MOVWF PORTB
+031F   20CD           00326         CALL LCD_E
+0320   20D5           00327         CALL RETARDO_5MS
+0321   3008           00328         MOVLW H'08' ; 
+0322   0086           00329         MOVWF PORTB
+0323   20CD           00330         CALL LCD_E
+0324   20D5           00331         CALL RETARDO_5MS
+0325   3008           00332         MOVLW H'08' ; 
+0326   0086           00333         MOVWF PORTB
+0327   20CD           00334         CALL LCD_E
+0328   20D5           00335         CALL RETARDO_5MS
+0329   3010           00336         MOVLW H'10' ; 
+032A   0086           00337         MOVWF PORTB
+032B   20CD           00338         CALL LCD_E
+032C   20D5           00339         CALL RETARDO_5MS
+                      00340 
+                      00341 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 3------------
+032D   301F           00342         MOVLW H'1F' ;                                                   ;IMAGEN IZQ 33%
+032E   0086           00343         MOVWF PORTB     
+032F   20CD           00344         CALL LCD_E
+0330   20D5           00345         CALL RETARDO_5MS
+0331   3010           00346         MOVLW H'10' ; 
+0332   0086           00347         MOVWF PORTB
+0333   20CD           00348         CALL LCD_E
+0334   20D5           00349         CALL RETARDO_5MS
+0335   3008           00350         MOVLW H'08' ; 
+0336   0086           00351         MOVWF PORTB
+0337   20CD           00352         CALL LCD_E
+0338   20D5           00353         CALL RETARDO_5MS
+0339   3004           00354         MOVLW H'04' ; 
+033A   0086           00355         MOVWF PORTB
+033B   20CD           00356         CALL LCD_E
+033C   20D5           00357         CALL RETARDO_5MS
+033D   3004           00358         MOVLW H'04' ; 
+033E   0086           00359         MOVWF PORTB
+033F   20CD           00360         CALL LCD_E
+0340   20D5           00361         CALL RETARDO_5MS
+0341   3003           00362         MOVLW H'03' ; 
+0342   0086           00363         MOVWF PORTB
+0343   20CD           00364         CALL LCD_E
+0344   20D5           00365         CALL RETARDO_5MS
+0345   3003           00366         MOVLW H'03' ; 
+0346   0086           00367         MOVWF PORTB
+0347   20CD           00368         CALL LCD_E
+0348   20D5           00369         CALL RETARDO_5MS
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 23
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0349   3001           00370         MOVLW H'01' ; 
+034A   0086           00371         MOVWF PORTB
+034B   20CD           00372         CALL LCD_E
+034C   20D5           00373         CALL RETARDO_5MS
+                      00374 
+                      00375 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 4------------
+034D   301F           00376         MOVLW H'1F' ;                                           ;IMAGEN DERECHA 33%
+034E   0086           00377         MOVWF PORTB
+034F   20CD           00378         CALL LCD_E
+0350   20D5           00379         CALL RETARDO_5MS
+0351   3001           00380         MOVLW H'01' ; 
+0352   0086           00381         MOVWF PORTB
+0353   20CD           00382         CALL LCD_E
+0354   20D5           00383         CALL RETARDO_5MS
+0355   3002           00384         MOVLW H'02' ; 
+0356   0086           00385         MOVWF PORTB
+0357   20CD           00386         CALL LCD_E
+0358   20D5           00387         CALL RETARDO_5MS
+0359   3004           00388         MOVLW H'04' ; 
+035A   0086           00389         MOVWF PORTB
+035B   20CD           00390         CALL LCD_E
+035C   20D5           00391         CALL RETARDO_5MS
+035D   3004           00392         MOVLW H'04' ; 
+035E   0086           00393         MOVWF PORTB
+035F   20CD           00394         CALL LCD_E
+0360   20D5           00395         CALL RETARDO_5MS
+0361   3018           00396         MOVLW H'18' ; 
+0362   0086           00397         MOVWF PORTB
+0363   20CD           00398         CALL LCD_E
+0364   20D5           00399         CALL RETARDO_5MS
+0365   3018           00400         MOVLW H'18' ; 
+0366   0086           00401         MOVWF PORTB
+0367   20CD           00402         CALL LCD_E
+0368   20D5           00403         CALL RETARDO_5MS
+0369   3010           00404         MOVLW H'10' ; 
+036A   0086           00405         MOVWF PORTB
+036B   20CD           00406         CALL LCD_E
+036C   20D5           00407         CALL RETARDO_5MS
+                      00408 
+                      00409 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 5------------
+036D   301F           00410         MOVLW H'1F' ;                                           ;IMAGEN IZQ 66%
+036E   0086           00411         MOVWF PORTB
+036F   20CD           00412         CALL LCD_E
+0370   20D5           00413         CALL RETARDO_5MS
+0371   3010           00414         MOVLW H'10' ; 
+0372   0086           00415         MOVWF PORTB
+0373   20CD           00416         CALL LCD_E
+0374   20D5           00417         CALL RETARDO_5MS
+0375   3008           00418         MOVLW H'08' ; 
+0376   0086           00419         MOVWF PORTB
+0377   20CD           00420         CALL LCD_E
+0378   20D5           00421         CALL RETARDO_5MS
+0379   3007           00422         MOVLW H'07' ; 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 24
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+037A   0086           00423         MOVWF PORTB
+037B   20CD           00424         CALL LCD_E
+037C   20D5           00425         CALL RETARDO_5MS
+037D   3007           00426         MOVLW H'07' ; 
+037E   0086           00427         MOVWF PORTB
+037F   20CD           00428         CALL LCD_E
+0380   20D5           00429         CALL RETARDO_5MS
+0381   3003           00430         MOVLW H'03' ; 
+0382   0086           00431         MOVWF PORTB
+0383   20CD           00432         CALL LCD_E
+0384   20D5           00433         CALL RETARDO_5MS
+0385   3003           00434         MOVLW H'03' ; 
+0386   0086           00435         MOVWF PORTB
+0387   20CD           00436         CALL LCD_E
+0388   20D5           00437         CALL RETARDO_5MS
+0389   3001           00438         MOVLW H'01' ; 
+038A   0086           00439         MOVWF PORTB
+038B   20CD           00440         CALL LCD_E
+038C   20D5           00441         CALL RETARDO_5MS
+                      00442 
+                      00443 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 6------------
+038D   301F           00444         MOVLW H'1F' ;                                           ;IMAGEN DERECHA 66%
+038E   0086           00445         MOVWF PORTB
+038F   20CD           00446         CALL LCD_E
+0390   20D5           00447         CALL RETARDO_5MS
+0391   3001           00448         MOVLW H'01' ; 
+0392   0086           00449         MOVWF PORTB
+0393   20CD           00450         CALL LCD_E
+0394   20D5           00451         CALL RETARDO_5MS
+0395   3002           00452         MOVLW H'02' ; 
+0396   0086           00453         MOVWF PORTB
+0397   20CD           00454         CALL LCD_E
+0398   20D5           00455         CALL RETARDO_5MS
+0399   301C           00456         MOVLW H'1C' ; 
+039A   0086           00457         MOVWF PORTB
+039B   20CD           00458         CALL LCD_E
+039C   20D5           00459         CALL RETARDO_5MS
+039D   301C           00460         MOVLW H'1C' ; 
+039E   0086           00461         MOVWF PORTB
+039F   20CD           00462         CALL LCD_E
+03A0   20D5           00463         CALL RETARDO_5MS
+03A1   3018           00464         MOVLW H'18' ; 
+03A2   0086           00465         MOVWF PORTB
+03A3   20CD           00466         CALL LCD_E
+03A4   20D5           00467         CALL RETARDO_5MS
+03A5   3018           00468         MOVLW H'18' ; 
+03A6   0086           00469         MOVWF PORTB
+03A7   20CD           00470         CALL LCD_E
+03A8   20D5           00471         CALL RETARDO_5MS
+03A9   3010           00472         MOVLW H'10' ; 
+03AA   0086           00473         MOVWF PORTB
+03AB   20CD           00474         CALL LCD_E
+03AC   20D5           00475         CALL RETARDO_5MS
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 25
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00476 
+                      00477 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 7------------
+03AD   301F           00478         MOVLW H'1F' ;                                                   ;IMAGEN IZQ 100%
+03AE   0086           00479         MOVWF PORTB
+03AF   20CD           00480         CALL LCD_E
+03B0   20D5           00481         CALL RETARDO_5MS
+03B1   301F           00482         MOVLW H'1F' ; 
+03B2   0086           00483         MOVWF PORTB
+03B3   20CD           00484         CALL LCD_E
+03B4   20D5           00485         CALL RETARDO_5MS
+03B5   300F           00486         MOVLW H'0F' ; 
+03B6   0086           00487         MOVWF PORTB
+03B7   20CD           00488         CALL LCD_E
+03B8   20D5           00489         CALL RETARDO_5MS
+03B9   3007           00490         MOVLW H'07' ; 
+03BA   0086           00491         MOVWF PORTB
+03BB   20CD           00492         CALL LCD_E
+03BC   20D5           00493         CALL RETARDO_5MS
+03BD   3007           00494         MOVLW H'07'; 
+03BE   0086           00495         MOVWF PORTB
+03BF   20CD           00496         CALL LCD_E
+03C0   20D5           00497         CALL RETARDO_5MS
+03C1   3003           00498         MOVLW H'03' ; 
+03C2   0086           00499         MOVWF PORTB
+03C3   20CD           00500         CALL LCD_E
+03C4   20D5           00501         CALL RETARDO_5MS
+03C5   3003           00502         MOVLW H'03'; 
+03C6   0086           00503         MOVWF PORTB
+03C7   20CD           00504         CALL LCD_E
+03C8   20D5           00505         CALL RETARDO_5MS
+03C9   3001           00506         MOVLW H'01'; 
+03CA   0086           00507         MOVWF PORTB
+03CB   20CD           00508         CALL LCD_E
+03CC   20D5           00509         CALL RETARDO_5MS
+                      00510 
+                      00511 ;---------------METE LAS 8 COLUMNAS DE LA IMAGEN 8------------
+03CD   301F           00512         MOVLW H'1F' ;                                                   ;IMAGEN DERECHA 100%
+03CE   0086           00513         MOVWF PORTB
+03CF   20CD           00514         CALL LCD_E
+03D0   20D5           00515         CALL RETARDO_5MS
+03D1   301F           00516         MOVLW H'1F' ; 
+03D2   0086           00517         MOVWF PORTB
+03D3   20CD           00518         CALL LCD_E
+03D4   20D5           00519         CALL RETARDO_5MS
+03D5   301E           00520         MOVLW H'1E' ; 
+03D6   0086           00521         MOVWF PORTB
+03D7   20CD           00522         CALL LCD_E
+03D8   20D5           00523         CALL RETARDO_5MS
+03D9   301C           00524         MOVLW H'1C' ; 
+03DA   0086           00525         MOVWF PORTB
+03DB   20CD           00526         CALL LCD_E
+03DC   20D5           00527         CALL RETARDO_5MS
+03DD   301C           00528         MOVLW H'1C' ; 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+03DE   0086           00529         MOVWF PORTB
+03DF   20CD           00530         CALL LCD_E
+03E0   20D5           00531         CALL RETARDO_5MS
+03E1   3018           00532         MOVLW H'18' ; 
+03E2   0086           00533         MOVWF PORTB
+03E3   20CD           00534         CALL LCD_E
+03E4   20D5           00535         CALL RETARDO_5MS
+03E5   3018           00536         MOVLW H'18' ; 
+03E6   0086           00537         MOVWF PORTB
+03E7   20CD           00538         CALL LCD_E
+03E8   20D5           00539         CALL RETARDO_5MS
+03E9   3010           00540         MOVLW H'10' ; 
+03EA   0086           00541         MOVWF PORTB
+03EB   20CD           00542         CALL LCD_E
+03EC   20D5           00543         CALL RETARDO_5MS
+                      00544 
+                      00545 ;-------------------SALE-------------------------
+03ED   1008           00546         BCF RS
+03EE   3001           00547         MOVLW B'00000001'
+03EF   0086           00548         MOVWF PORTB
+03F0   20CD           00549         CALL LCD_E
+03F1   20D5           00550         CALL RETARDO_5MS
+03F2   1408           00551         BSF RS
+                      00552 
+03F3   0008           00553         RETURN
+                      00554 
+                      00555 ;/////////////////////////////////////////////////////////////////////////
+                      00556 
+03F4                  00557 ELIJE_FIGURA_VOLMETRO_ALTA
+03F4   3033           00558         MOVLW 0X33                                              ;COMPARA PARA MOSTRAR LAS IMAGENES DEPEN
+                            DIENDO DEL PORCENTAJE
+03F5   0224           00559         SUBWF guarda,W
+03F6   1C03           00560         BTFSS STATUS,0
+03F7   2C1E           00561         GOTO IMPRIME_0H
+                      00562 
+03F8   3066           00563         MOVLW 0X66                                              
+03F9   0224           00564         SUBWF guarda,W
+03FA   1C03           00565         BTFSS STATUS,0
+03FB   2C1E           00566         GOTO IMPRIME_0H
+                      00567 
+03FC   3099           00568         MOVLW 0X99      
+03FD   0224           00569         SUBWF guarda,W
+03FE   1C03           00570         BTFSS STATUS,0
+03FF   2C23           00571         GOTO IMPRIME_50H
+                      00572 
+0400   30CC           00573         MOVLW 0XCC      
+0401   0224           00574         SUBWF guarda,W
+0402   1C03           00575         BTFSS STATUS,0
+0403   2C28           00576         GOTO IMPRIME_75H
+                      00577 
+0404   3003           00578         MOVLW b'00000011' 
+0405   0086           00579         MOVWF PORTB
+0406   20CD           00580         CALL LCD_E
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0407   20D5           00581         CALL RETARDO_5MS
+0408                  00582 SALEH
+0408   0008           00583         RETURN
+                      00584 ;---------------------------------------
+0409                  00585 ELIJE_FIGURA_VOLMETRO_BAJO
+0409   3033           00586         MOVLW 0X33      
+040A   0224           00587         SUBWF guarda,W
+040B   1C03           00588         BTFSS STATUS,0
+040C   2C2D           00589         GOTO IMPRIME_0L
+                      00590 
+040D   3066           00591         MOVLW 0X66      
+040E   0224           00592         SUBWF guarda,W
+040F   1C03           00593         BTFSS STATUS,0
+0410   2C32           00594         GOTO IMPRIME_25L
+                      00595 
+0411   3099           00596         MOVLW 0X99      
+0412   0224           00597         SUBWF guarda,W
+0413   1C03           00598         BTFSS STATUS,0
+0414   2C37           00599         GOTO IMPRIME_50L
+                      00600 
+0415   30CC           00601         MOVLW 0XCC      
+0416   0224           00602         SUBWF guarda,W
+0417   1C03           00603         BTFSS STATUS,0
+0418   2C3C           00604         GOTO IMPRIME_75L        
+                      00605                 
+0419   30FF           00606         MOVLW b'11111111'                               ;IMPRIME TODO LLENO
+041A   0086           00607         MOVWF PORTB
+041B   20CD           00608         CALL LCD_E
+041C   20D5           00609         CALL RETARDO_5MS
+041D                  00610 SALEL
+041D   0008           00611         RETURN
+                      00612 ;--------------------------------------------
+041E                  00613 IMPRIME_0H
+041E   3000           00614         MOVLW b'00000000' 
+041F   0086           00615         MOVWF PORTB
+0420   20CD           00616         CALL LCD_E
+0421   20D5           00617         CALL RETARDO_5MS
+Warning[203]: Found opcode in column 1. (GOTO)
+0422   2C08           00618 GOTO SALEH
+                      00619 
+0423                  00620 IMPRIME_50H
+0423   3001           00621         MOVLW b'00000001' 
+0424   0086           00622         MOVWF PORTB
+0425   20CD           00623         CALL LCD_E
+0426   20D5           00624         CALL RETARDO_5MS
+Warning[203]: Found opcode in column 1. (GOTO)
+0427   2C08           00625 GOTO SALEH
+                      00626 
+0428                  00627 IMPRIME_75H
+0428   3002           00628         MOVLW b'00000010' 
+0429   0086           00629         MOVWF PORTB
+042A   20CD           00630         CALL LCD_E
+042B   20D5           00631         CALL RETARDO_5MS
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Warning[203]: Found opcode in column 1. (GOTO)
+042C   2C08           00632 GOTO SALEH
+                      00633 ;---------------------------------------
+042D                  00634 IMPRIME_0L
+042D   3004           00635         MOVLW b'00000100' 
+042E   0086           00636         MOVWF PORTB
+042F   20CD           00637         CALL LCD_E
+0430   20D5           00638         CALL RETARDO_5MS
+Warning[203]: Found opcode in column 1. (GOTO)
+0431   2C1D           00639 GOTO SALEL
+                      00640 
+0432                  00641 IMPRIME_25L
+0432   3005           00642         MOVLW b'00000101' 
+0433   0086           00643         MOVWF PORTB
+0434   20CD           00644         CALL LCD_E
+0435   20D5           00645         CALL RETARDO_5MS
+Warning[203]: Found opcode in column 1. (GOTO)
+0436   2C1D           00646 GOTO SALEL
+                      00647 
+0437                  00648 IMPRIME_50L
+0437   3006           00649         MOVLW b'00000110' 
+0438   0086           00650         MOVWF PORTB
+0439   20CD           00651         CALL LCD_E
+043A   20D5           00652         CALL RETARDO_5MS
+Warning[203]: Found opcode in column 1. (GOTO)
+043B   2C1D           00653 GOTO SALEL
+                      00654 
+043C                  00655 IMPRIME_75L
+043C   30FF           00656         MOVLW b'11111111' 
+043D   0086           00657         MOVWF PORTB
+043E   20CD           00658         CALL LCD_E
+043F   20D5           00659         CALL RETARDO_5MS
+Warning[203]: Found opcode in column 1. (GOTO)
+0440   2C1D           00660 GOTO SALEL
+                      00661 
+                      00662 
+                      00663 ;////////////////////////////////////////////////////////////////////////
+0441                  00664 ELIJE_FIGURA_TEMP
+0441   3011           00665         MOVLW 0X11      
+0442   0224           00666         SUBWF guarda,W
+0443   1C03           00667         BTFSS STATUS,0
+0444   2C56           00668         GOTO IMPRIME_CERO
+                      00669 
+0445   3043           00670         MOVLW 0X43      
+0446   0224           00671         SUBWF guarda,W
+0447   1C03           00672         BTFSS STATUS,0
+0448   2C5F           00673         GOTO IMPRIME_TRES
+                      00674 
+0449   3074           00675         MOVLW 0X74      
+044A   0224           00676         SUBWF guarda,W
+044B   1C03           00677         BTFSS STATUS,0
+044C   2C68           00678         GOTO IMPRIME_SEIS
+                      00679 
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+044D   3006           00680         MOVLW b'00000110'                               ;IMPRIME 100
+044E   0086           00681         MOVWF PORTB
+044F   20CD           00682         CALL LCD_E
+0450   20D5           00683         CALL RETARDO_5MS
+                      00684 
+0451   3007           00685         MOVLW b'00000111' 
+0452   0086           00686         MOVWF PORTB
+0453   20CD           00687         CALL LCD_E
+0454   20D5           00688         CALL RETARDO_5MS
+                      00689 
+0455   0008           00690         RETURN
+                      00691 ;-----------------------------------------------
+0456                  00692 IMPRIME_CERO
+0456   3000           00693         MOVLW b'00000000' 
+0457   0086           00694         MOVWF PORTB
+0458   20CD           00695         CALL LCD_E
+0459   20D5           00696         CALL RETARDO_5MS
+                      00697 
+045A   3001           00698         MOVLW b'00000001' 
+045B   0086           00699         MOVWF PORTB
+045C   20CD           00700         CALL LCD_E
+045D   20D5           00701         CALL RETARDO_5MS
+                      00702 
+045E   0008           00703         RETURN
+                      00704 
+045F                  00705 IMPRIME_TRES
+045F   3002           00706         MOVLW b'00000010' 
+0460   0086           00707         MOVWF PORTB
+0461   20CD           00708         CALL LCD_E
+0462   20D5           00709         CALL RETARDO_5MS
+                      00710 
+0463   3003           00711         MOVLW b'00000011' 
+0464   0086           00712         MOVWF PORTB
+0465   20CD           00713         CALL LCD_E
+0466   20D5           00714         CALL RETARDO_5MS
+                      00715 
+0467   0008           00716         RETURN
+                      00717 
+0468                  00718 IMPRIME_SEIS
+0468   3004           00719         MOVLW b'00000100' 
+0469   0086           00720         MOVWF PORTB
+046A   20CD           00721         CALL LCD_E
+046B   20D5           00722         CALL RETARDO_5MS
+                      00723 
+046C   3005           00724         MOVLW b'00000101' 
+046D   0086           00725         MOVWF PORTB
+046E   20CD           00726         CALL LCD_E
+046F   20D5           00727         CALL RETARDO_5MS
+                      00728 
+0470   0008           00729         RETURN
+                      00730 
+                      00731 
+Warning[205]: Found directive in column 1. (END)
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00102 END
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 31
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ADCON0                            0000001F
+ADCON1                            0000009F
+ADCS0                             00000006
+ADCS1                             00000007
+ADCS2                             00000006
+ADDEN                             00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADON                              00000000
+ADRESH                            0000001E
+ADRESL                            0000009E
+A_HEXA                            00000086
+BCLIE                             00000003
+BCLIF                             00000003
+BF                                00000000
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           0000001D
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CCPR2                             0000001B
+CCPR2H                            0000001C
+CCPR2L                            0000001B
+CENT_DEC_UNI                      00000036
+CENT_DEC_UNI_VOL                  00000059
+CHS0                              00000003
+CHS1                              00000004
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 32
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CHS2                              00000005
+CIS                               00000003
+CKE                               00000006
+CKP                               00000004
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000009C
+CMIE                              00000006
+CMIF                              00000006
+CONTADOR                          00000025
+CONVIERTE_A_VOLTAJE               00000093
+CREN                              00000004
+CSRC                              00000007
+CVR0                              00000000
+CVR1                              00000001
+CVR2                              00000002
+CVR3                              00000003
+CVRCON                            0000009D
+CVREN                             00000007
+CVROE                             00000006
+CVRR                              00000005
+D                                 00000005
+DATA_ADDRESS                      00000005
+DC                                00000001
+D_A                               00000005
+D_NOT_A                           00000005
+EEADR                             0000010D
+EEADRH                            0000010F
+EECON1                            0000018C
+EECON2                            0000018D
+EEDATA                            0000010C
+EEDATH                            0000010E
+EEIE                              00000004
+EEIF                              00000004
+EEPGD                             00000007
+ELIJE_FIGURA_TEMP                 00000441
+ELIJE_FIGURA_VOLMETRO_ALTA        000003F4
+ELIJE_FIGURA_VOLMETRO_BAJO        00000409
+ENABLE                            PORTD,2
+ESPERA                            00000031
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GCEN                              00000007
+GIE                               00000007
+GO                                00000002
+GO_DONE                           00000002
+GO_NOT_DONE                       00000002
+I2C_DATA                          00000005
+I2C_READ                          00000002
+I2C_START                         00000003
+I2C_STOP                          00000004
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 33
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+IBF                               00000007
+IBOV                              00000005
+IMPRIME_0H                        0000041E
+IMPRIME_0L                        0000042D
+IMPRIME_25L                       00000432
+IMPRIME_50H                       00000423
+IMPRIME_50L                       00000437
+IMPRIME_75H                       00000428
+IMPRIME_75L                       0000043C
+IMPRIME_CERO                      00000456
+IMPRIME_SEIS                      00000468
+IMPRIME_TRES                      0000045F
+INDF                              00000000
+INICIO                            00000005
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LCD_E                             000000CD
+LCD_INIT                          000000B4
+LEEDATO                           0000002F
+LINEA1                            000000FF
+LINEAVOLT                         0000016F
+LOADCARACTERTEMPERATURA           000002E7
+LOADCARACTERVOLMETRO              000001FA
+MUESTRA_TEMP                      000000EF
+MUESTRA_VOLT                      000000F7
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BO                            00000000
+NOT_BOR                           00000000
+NOT_DONE                          00000002
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RC8                           00000006
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_TX8                           00000006
+NOT_W                             00000002
+NOT_WRITE                         00000002
+OBF                               00000006
+OERR                              00000001
+OPTION_REG                        00000081
+P                                 00000004
+PCFG0                             00000000
+PCFG1                             00000001
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 34
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PEIE                              00000006
+PEN                               00000002
+PIE1                              0000008C
+PIE2                              0000008D
+PIR1                              0000000C
+PIR2                              0000000D
+PORTA                             00000005
+PORTB                             00000006
+PORTC                             00000007
+PORTD                             00000008
+PORTE                             00000009
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+PSPIE                             00000007
+PSPIF                             00000007
+PSPMODE                           00000004
+R                                 00000002
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RC0                               00000000
+RC1                               00000001
+RC2                               00000002
+RC3                               00000003
+RC4                               00000004
+RC5                               00000005
+RC6                               00000006
+RC7                               00000007
+RC8_9                             00000006
+RC9                               00000006
+RCD8                              00000000
+RCEN                              00000003
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 35
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RD0                               00000000
+RD1                               00000001
+RD2                               00000002
+RD3                               00000003
+RD4                               00000004
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RE0                               00000000
+RE1                               00000001
+RE2                               00000002
+READ_WRITE                        00000002
+RETARDO                           000000E2
+RETARDO20uS                       0000008E
+RETARDO_5MS                       000000D5
+RP0                               00000005
+RP1                               00000006
+RS                                PORTD,0
+RSEN                              00000001
+RW                                PORTD,1
+RX9                               00000006
+RX9D                              00000000
+R_NOT_W                           00000002
+R_W                               00000002
+S                                 00000003
+SALEH                             00000408
+SALEL                             0000041D
+SEN                               00000000
+SMP                               00000007
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSPADD                            00000093
+SSPBUF                            00000013
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000094
+STATUS                            00000003
+SWITCH                            00000016
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 36
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T1CKPS1                           00000005
+T1CON                             00000010
+T1INSYNC                          00000002
+T1OSCEN                           00000003
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TEMPERATURA                       0000001C
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRISC                             00000087
+TRISC0                            00000000
+TRISC1                            00000001
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000088
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 37
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TRISD0                            00000000
+TRISD1                            00000001
+TRISD2                            00000002
+TRISD3                            00000003
+TRISD4                            00000004
+TRISD5                            00000005
+TRISD6                            00000006
+TRISD7                            00000007
+TRISE                             00000089
+TRISE0                            00000000
+TRISE1                            00000001
+TRISE2                            00000002
+TRMT                              00000001
+TX8_9                             00000006
+TX9                               00000006
+TX9D                              00000000
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+UA                                00000001
+VOLMETRO                          00000025
+W                                 00000000
+WCOL                              00000007
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_ALL                           00001FFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DEBUG_OFF                        00003FFF
+_DEBUG_ON                         000037FF
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 38
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_WRT_1FOURTH                      00003BFF
+_WRT_256                          00003DFF
+_WRT_HALF                         000039FF
+_WRT_OFF                          00003FFF
+_XT_OSC                           00003FFD
+__16F877A                         00000001
+contImprimiendo                   00000159
+contImprimiendoVOL                000001CA
+continua                          00000162
+continuaVOL                       000001E0
+divide                            0000009F
+divideLow                         000000A9
+dos                               000000D9
+dos2                              000000E6
+guarda                            00000024
+inc_centenas                      00000053
+inc_centenasV                     00000077
+inc_decenas                       00000055
+inc_decenasV                      00000079
+inc_unidades                      00000057
+inc_unidadesV                     0000007B
+incrementaDiv                     000000AF
+menorHigh                         00000163
+menorHighVOL                      000001D4
+menorLow                          00000169
+menorLowVOL                       000001DA
+multiplica                        00000097
+resDiv_high                       00000032
+resDiv_low                        00000034
+resta_centenas                    0000003C
+resta_centenasV                   0000005F
+resta_decenas                     00000044
+resta_decenasV                    00000068
+resta_highCentenaV                00000083
+resta_highV                       0000007D
+resta_unidades                    0000004C
+resta_unidadesV                   00000070
+result_high                       00000030
+result_low                        00000031
+sigue                             000000A5
+temp                              00000025
+temp2                             00000026
+tres                              000000D7
+tres2                             000000E4
+MPASM  5.51                   MAINVOLTEMP.ASM   4-23-2019  21:33:09         PAGE 39
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+uno                               000000DB
+uno2                              000000E8
+uno20u                            00000090
+val64hex                          0000002D
+valCent                           00000027
+valDece                           00000028
+valDeci                           0000002A
+valHexHigh                        0000002B
+valHexLow                         0000002C
+valUni                            00000029
+valor1                            00000021
+valor2                            00000022
+valor3                            00000023
+voltaje                           0000002F
+voltaje_h                         0000002E
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X----XXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0180 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+01C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0200 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0240 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0280 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+02C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0300 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0340 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0380 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+03C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0400 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0440 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX X---------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:  1133
+Program Memory Words Free:  7059
+
+
+Errors   :     0
+Warnings :    11 reported,     0 suppressed
+Messages :    26 reported,     0 suppressed
+
+

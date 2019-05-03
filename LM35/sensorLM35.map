@@ -1,0 +1,72 @@
+MPLINK 4.46, Linker
+Linker Map File - Created Tue Apr 23 14:15:16 2019
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000005    program   0x0000ea
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000005    0x000079      
+            118 out of 8454 program addresses used, program memory utilization is 1%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                CENTENAS1   0x000057    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    CICLO   0x000030    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                  COMANDO   0x000022    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                 DECENAS1   0x00005e    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   DELAY1   0x00006c    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   DELAY2   0x000071    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    ENVIA   0x00001f    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                ERASE_LCD   0x000028    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   ESPERA   0x000032    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   INICIO   0x000005    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                     Loop   0x00006e    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    Loop1   0x000073    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    Loop2   0x000075    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+              OBTEN_ASCII   0x000067    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+               PRINT_TEMP   0x000036    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                READ_TEMP   0x000051    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    START   0x000011    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                START_ADC   0x00002e    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                START_LCD   0x000013    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                UNIDADES1   0x000065    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   INICIO   0x000005    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    START   0x000011    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                START_LCD   0x000013    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    ENVIA   0x00001f    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                  COMANDO   0x000022    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                ERASE_LCD   0x000028    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                START_ADC   0x00002e    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    CICLO   0x000030    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   ESPERA   0x000032    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+               PRINT_TEMP   0x000036    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                READ_TEMP   0x000051    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                CENTENAS1   0x000057    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                 DECENAS1   0x00005e    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                UNIDADES1   0x000065    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+              OBTEN_ASCII   0x000067    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   DELAY1   0x00006c    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                     Loop   0x00006e    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                   DELAY2   0x000071    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    Loop1   0x000073    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+                    Loop2   0x000075    program     static C:\Users\Daniel\Desktop\Proyecto2\Proyecto 5\sensorLM35.asm
+
+

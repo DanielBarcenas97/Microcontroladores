@@ -1,0 +1,1251 @@
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001                 processor 16f877
+                      00002                 include <p16f877.inc>
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F877 processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2012 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+Message[301]: MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+                      00540         LIST
+                      00003                         
+  00000020            00004 varB:   equ h'20'
+  00000021            00005 res0:   equ h'21'
+  00000022            00006 res1:   equ h'22'
+  00000023            00007 valor1: equ h'23'
+                      00008 
+                      00009         ;variables para uso del LCD     
+Warning[207]: Found label after column 1. (N)
+  00000024            00010         N       equ h'24'
+Warning[207]: Found label after column 1. (M)
+  00000025            00011         M       equ h'25'
+Warning[207]: Found label after column 1. (Nx)
+  00000026            00012         Nx      equ h'26'
+Warning[207]: Found label after column 1. (Mx)
+  00000027            00013         Mx      equ h'27'
+Warning[207]: Found label after column 1. (p)
+  00000028            00014         p       equ h'28'
+                      00015 
+Warning[207]: Found label after column 1. (aux)
+  00000029            00016    aux: equ h'29'
+                      00017         ;variables para valor decimal
+  00000030            00018 dec0:   equ h'30'
+  00000031            00019 dec1:   equ h'31'
+                      00020         ;variable para el valor hexa
+  00000032            00021 hex0:   equ h'32'
+                      00022         ;Vector de inicio
+0000                  00023                 org 0
+0000   2805           00024                 goto inicio
+0005                  00025                 org 5
+                      00026 
+0005                  00027 inicio:
+                      00028                 ;configurar puertos
+0005   0185           00029         CLRF PORTA
+0006   0186           00030                 CLRF PORTB
+0007   1683           00031                 BSF STATUS,RP0  ;Cambiar al banco 1
+0008   1303           00032                 BCF STATUS,RP1
+0009   300E           00033                 MOVLW h'0E'     ;Configura puertos A y E como analogicos
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000A   009F           00034                 MOVWF ADCON1            
+000B   303F           00035                 MOVLW 3FH               ;Configura el puerto A como entrada
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+000C   0085           00036                 MOVWF TRISA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000D   0186           00037                 clrf TRISB              ;configurar puertos B y D como salida
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000E   0188           00038                 clrf TRISD
+000F   1283           00039                 BCF STATUS,RP0  ;regresar al banco 0    
+                      00040 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Mostrar nombre1
+0010   1085           00041                 bcf PORTA,1
+0011   21C3           00042                 call lcd_in
+0012   2182           00043                 call nameA
+0013   21D8           00044                 call next
+0014   21A7           00045                 call nameB
+0015                  00046 carlos:
+0015   1C85           00047                 btfss PORTA,1
+0016   2815           00048                 goto carlos
+                      00049 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Mostrar nombre 2
+0017   1085           00050                 bcf PORTA,1
+0018   21DD           00051                 call pausa
+0019   21DD           00052                 call pausa
+001A   21DD           00053                 call pausa
+001B   21C3           00054                 call lcd_in
+001C   213E           00055                 call name1
+001D   21D8           00056                 call next
+001E   2169           00057                 call name2
+001F                  00058 fer:
+001F   1C85           00059                 btfss PORTA,1
+0020   281F           00060                 goto fer
+                      00061 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>muestro de entrada analógica
+0021                  00062 muestreo:
+0021   30C5           00063                 MOVLW b'11000101' ; Configurar frecuencia de muestreo
+0022   009F           00064                 MOVWF ADCON0
+0023   202A           00065                 CALL retardo
+0024   191F           00066 loop:   BTFSC ADCON0,2
+0025   2824           00067                 GOTO loop
+0026   081E           00068                 MOVF ADRESH,0
+0027   00A0           00069                 MOVWF varB              ;mover el resultado de la conversión a varB
+0028   00B2           00070                 MOVWF hex0              ;mover el resultado de la conversión a hex0
+0029   282F           00071                 GOTO ceros              ;ir a ceros para obtener el valor del voltajes
+                      00072 
+002A                  00073 retardo:        
+002A   3030           00074                 movlw h'30'
+002B   00A3           00075                 movwf valor1
+Message[305]: Using default destination of 1 (file).
+002C   0BA3           00076 l1:     decfsz valor1
+002D   282C           00077                 goto l1
+002E   0008           00078                 return
+                      00079 
+                      00080 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>obtener el valor del voltaje
+002F                  00081 ceros:
+                      00082                 ;en ceros el resultado
+002F   3000           00083                 movlw h'00'
+0030   00A1           00084                 movwf res0
+0031   00A2           00085                 movwf res1
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0032   00B0           00086                 movwf dec0
+0033   00B1           00087                 movwf dec1
+0034                  00088 sumas:  
+0034   1820           00089                 btfsc varB,0
+0035   2845           00090                 goto bit0
+0036   18A0           00091                 btfsc varB,1
+0037   284F           00092                 goto bit1
+0038   1920           00093                 btfsc varB,2
+0039   2859           00094                 goto bit2
+003A   19A0           00095                 btfsc varB,3
+003B   2863           00096                 goto bit3
+003C   1A20           00097                 btfsc varB,4
+003D   286D           00098                 goto bit4
+003E   1AA0           00099                 btfsc varB,5
+003F   2877           00100                 goto bit5
+0040   1B20           00101                 btfsc varB,6
+0041   2881           00102                 goto bit6
+0042   1BA0           00103                 btfsc varB,7
+0043   288E           00104                 goto bit7
+0044   28CA           00105                 goto mostrar
+                      00106 
+0045                  00107 bit0:   ;sumar 0.02; 001
+0045   0822           00108         movf res1,0
+0046   3E02           00109         addlw h'02'
+0047   00A2           00110         movwf res1
+                      00111 
+0048   0831           00112         movf dec1,0
+0049   3E01           00113         addlw h'01'
+004A   00B1           00114         movwf dec1      
+                      00115 
+004B   209E           00116         call fix
+004C   20B4           00117         call fixD
+004D   1020           00118         bcf varB,0
+004E   2834           00119         goto sumas
+                      00120 
+004F                  00121 bit1:   ;sumar 0.04; 002
+004F   0822           00122         movf res1,0
+0050   3E04           00123         addlw h'04'
+0051   00A2           00124         movwf res1
+                      00125 
+0052   0831           00126         movf dec1,0
+0053   3E02           00127         addlw h'02'
+0054   00B1           00128         movwf dec1
+                      00129 
+0055   209E           00130         call fix
+0056   20B4           00131         call fixD
+0057   10A0           00132         bcf varB,1
+0058   2834           00133         goto sumas
+                      00134 
+0059                  00135 bit2:   ;sumar 0.08; 004
+0059   0822           00136         movf res1,0
+005A   3E08           00137         addlw h'08'
+005B   00A2           00138         movwf res1
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00139 
+005C   0831           00140         movf dec1,0
+005D   3E04           00141         addlw h'04'
+005E   00B1           00142         movwf dec1
+                      00143 
+005F   209E           00144         call fix
+0060   20B4           00145         call fixD
+0061   1120           00146         bcf varB,2
+0062   2834           00147         goto sumas
+                      00148 
+0063                  00149 bit3:   ;sumar 0.16; 008
+0063   0822           00150         movf res1,0
+0064   3E16           00151         addlw h'16'
+0065   00A2           00152         movwf res1
+                      00153 
+0066   0831           00154         movf dec1,0
+0067   3E08           00155         addlw h'08'
+0068   00B1           00156         movwf dec1
+                      00157 
+0069   209E           00158         call fix
+006A   20B4           00159         call fixD
+006B   11A0           00160         bcf varB,3
+006C   2834           00161         goto sumas
+                      00162 
+006D                  00163 bit4:   ;sumar 0.32; 016
+006D   0822           00164         movf res1,0
+006E   3E32           00165         addlw h'32'
+006F   00A2           00166         movwf res1
+                      00167 
+0070   0831           00168         movf dec1,0
+0071   3E16           00169         addlw h'16'
+0072   00B1           00170         movwf dec1
+                      00171 
+0073   209E           00172         call fix
+0074   20B4           00173         call fixD
+0075   1220           00174         bcf varB,4
+0076   2834           00175         goto sumas
+                      00176 
+0077                  00177 bit5:   ;sumar 0.63; 032
+0077   0822           00178         movf res1,0
+0078   3E63           00179         addlw h'63'
+0079   00A2           00180         movwf res1
+                      00181 
+007A   0831           00182         movf dec1,0
+007B   3E32           00183         addlw h'32'
+007C   00B1           00184         movwf dec1
+                      00185 
+007D   209E           00186         call fix
+007E   20B4           00187         call fixD
+007F   12A0           00188         bcf varB,5
+0080   2834           00189         goto sumas
+0081                  00190 bit6:   ;sumar 1.25; 064
+0081   0822           00191         movf res1,0
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0082   3E25           00192         addlw h'25'
+0083   00A2           00193         movwf res1
+0084   0821           00194         movf res0,0
+0085   3E01           00195         addlw h'01'
+0086   00A1           00196         movwf res0
+                      00197 
+0087   0831           00198         movf dec1,0
+0088   3E64           00199         addlw h'64'
+0089   00B1           00200         movwf dec1
+                      00201 
+008A   209E           00202         call fix
+008B   20B4           00203         call fixD
+008C   1320           00204         bcf varB,6
+008D   2834           00205         goto sumas
+                      00206 
+008E                  00207 bit7:   ;sumar 2.50; 128
+008E   0822           00208         movf res1,0
+008F   3E50           00209         addlw h'50'
+0090   00A2           00210         movwf res1
+0091   0821           00211         movf res0,0
+0092   3E02           00212         addlw h'02'
+0093   00A1           00213         movwf res0
+                      00214 
+0094   0831           00215         movf dec1,0
+0095   3E28           00216         addlw h'28'
+0096   00B1           00217         movwf dec1
+0097   0830           00218         movf dec0,0
+0098   3E01           00219         addlw h'01'
+0099   00B0           00220         movwf dec0
+                      00221 
+009A   209E           00222         call fix
+009B   20B4           00223         call fixD
+009C   13A0           00224         bcf varB,7
+009D   2834           00225         goto sumas              ;mostrar resultado en pantalla LCD
+                      00226 
+009E                  00227 fix:
+009E   1003           00228         bcf STATUS,C
+009F   300F           00229         movlw b'00001111'
+00A0   0522           00230         andwf res1,0
+00A1   3C09           00231         sublw b'00001001'
+00A2   1C03           00232         btfss STATUS,C
+00A3   28AA           00233         goto add10
+00A4                  00234 compdec:
+00A4   30F0           00235         movlw b'11110000'
+00A5   0522           00236         andwf res1,0
+00A6   3C90           00237         sublw b'10010000'
+00A7   1C03           00238         btfss STATUS,C
+00A8   28AF           00239         goto add100
+00A9   28B3           00240         goto regresar
+00AA                  00241 add10:
+00AA   300A           00242         movlw b'00001010'
+00AB   02A2           00243         subwf res1,1    
+00AC   3010           00244         movlw b'00010000'
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00AD   07A2           00245         addwf res1,1
+00AE   28A4           00246         goto compdec
+00AF                  00247 add100:
+00AF   30A0           00248         movlw b'10100000'
+00B0   02A2           00249         subwf res1,1    
+00B1   3001           00250         movlw b'00000001'
+00B2   07A1           00251         addwf res0,1
+00B3                  00252 regresar:
+00B3   0008           00253         return
+                      00254 
+                      00255 ;>>>
+00B4                  00256 fixD:
+00B4   1003           00257         bcf STATUS,C
+00B5   300F           00258         movlw b'00001111'
+00B6   0531           00259         andwf dec1,0
+00B7   3C09           00260         sublw b'00001001'
+00B8   1C03           00261         btfss STATUS,C
+00B9   28C0           00262         goto add10D
+00BA                  00263 compdecD:
+00BA   30F0           00264         movlw b'11110000'
+00BB   0531           00265         andwf dec1,0
+00BC   3C90           00266         sublw b'10010000'
+00BD   1C03           00267         btfss STATUS,C
+00BE   28C5           00268         goto add100D
+00BF   28B3           00269         goto regresar
+00C0                  00270 add10D:
+00C0   300A           00271         movlw b'00001010'
+00C1   02B1           00272         subwf dec1,1    
+00C2   3010           00273         movlw b'00010000'
+00C3   07B1           00274         addwf dec1,1
+00C4   28BA           00275         goto compdecD
+00C5                  00276 add100D:
+00C5   30A0           00277         movlw b'10100000'
+00C6   02B1           00278         subwf dec1,1    
+00C7   3001           00279         movlw b'00000001'
+00C8   07B0           00280         addwf dec0,1
+00C9                  00281 regresarD:
+00C9   0008           00282         return
+                      00283 
+                      00284 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Imprimir en LCD voltaje
+00CA                  00285 mostrar:
+00CA                  00286 lcd_inicio:
+00CA   21C3           00287                 call lcd_in
+00CB   20CF           00288                 call txt1
+00CC   21D8           00289                 call next
+00CD   2112           00290                 call txt2
+00CE   2821           00291                 goto muestreo
+                      00292 
+00CF                  00293 txt1:   
+00CF   3048           00294                 movlw 'H'
+00D0   0086           00295                 movwf PORTB
+00D1   21D5           00296                 call send
+                      00297 
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00D2   30F0           00298                 movlw b'11110000'
+00D3   0532           00299                 andwf hex0,0    ;xxxx0000
+00D4   00A9           00300                 movwf aux               ;
+00D5   0EA9           00301                 swapf aux,1             ;0000xxxx
+00D6   300A           00302                 movlw h'0A'
+00D7   0229           00303                 subwf aux,0             ; w=aux-h0A
+00D8   1C03           00304                 btfss STATUS,C
+00D9   28E0           00305                 goto menorA             ;menor a A
+00DA   3009           00306                 movlw h'09'
+00DB   0229           00307                 subwf aux,0             ; w=aux-h09
+00DC   3E40           00308                 addlw b'01000000'
+00DD   0086           00309                 movwf PORTB
+00DE   21D5           00310                 call send
+00DF   28E4           00311                 goto seguir
+00E0                  00312 menorA:
+00E0   0829           00313                 movf aux,0
+00E1   3E30           00314                 addlw b'00110000'
+00E2   0086           00315                 movwf PORTB
+00E3   21D5           00316                 call send
+00E4                  00317 seguir:
+00E4   300F           00318                 movlw b'00001111'
+00E5   0532           00319                 andwf hex0,0
+00E6   00A9           00320                 movwf aux               
+00E7   300A           00321                 movlw h'0A'
+00E8   0229           00322                 subwf aux,0             ; w=aux-h0A
+00E9   1C03           00323                 btfss STATUS,C
+00EA   28F1           00324                 goto menorA2            ;menor a A      
+00EB   3009           00325                 movlw h'09'
+00EC   0229           00326                 subwf aux,0             ; w=aux-h09
+00ED   3E40           00327                 addlw b'01000000'
+00EE   0086           00328                 movwf PORTB
+00EF   21D5           00329                 call send
+00F0   28F5           00330                 goto seguir2
+00F1                  00331 menorA2:
+00F1   0829           00332                 movf aux,0
+00F2   3E30           00333                 addlw b'00110000'
+00F3   0086           00334                 movwf PORTB
+00F4   21D5           00335                 call send
+00F5                  00336 seguir2:
+                      00337         
+                      00338 
+00F5   3009           00339                 movlw D'9'
+00F6   00A9           00340                 movwf aux
+00F7                  00341 addspace:
+00F7   3020           00342                 movlw ' '
+00F8   0086           00343                 movwf PORTB
+00F9   21D5           00344                 call send       
+00FA   0BA9           00345                 decfsz aux,1
+00FB   28F7           00346                 goto addspace
+                      00347                 
+00FC   3044           00348                 movlw 'D'
+00FD   0086           00349                 movwf PORTB
+00FE   21D5           00350                 call send
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00351 
+00FF   300F           00352                 movlw b'00001111'
+0100   0530           00353                 andwf dec0,0
+0101   3E30           00354                 addlw b'00110000'               
+0102   0086           00355                 movwf PORTB
+0103   21D5           00356                 call send
+                      00357 
+0104   30F0           00358                 movlw b'11110000'
+0105   0531           00359                 andwf dec1,0
+0106   00A9           00360                 movwf aux
+0107   0EA9           00361                 swapf aux,1
+0108   3030           00362                 movlw b'00110000'               
+0109   0729           00363                 addwf aux,0
+010A   0086           00364                 movwf PORTB
+010B   21D5           00365                 call send
+                      00366 
+010C   300F           00367                 movlw b'00001111'
+010D   0531           00368                 andwf dec1,0
+010E   3E30           00369                 addlw b'00110000'               
+010F   0086           00370                 movwf PORTB
+0110   21D5           00371                 call send
+                      00372 
+0111   0008           00373                 return
+                      00374 
+0112                  00375 txt2:
+                      00376 
+0112   3020           00377                 movlw ' '
+0113   0086           00378                 movwf PORTB
+0114   21D5           00379                 call send
+0115   3020           00380                 movlw ' '
+0116   0086           00381                 movwf PORTB
+0117   21D5           00382                 call send
+0118   3020           00383                 movlw ' '
+0119   0086           00384                 movwf PORTB
+011A   21D5           00385                 call send
+011B   3020           00386                 movlw ' '
+011C   0086           00387                 movwf PORTB
+011D   21D5           00388                 call send
+011E   3056           00389                 movlw 'V'
+011F   0086           00390                 movwf PORTB
+0120   21D5           00391                 call send
+0121   303D           00392                 movlw '='
+0122   0086           00393                 movwf PORTB
+0123   21D5           00394                 call send
+                      00395 
+0124   300F           00396                 movlw b'00001111'
+0125   0521           00397                 andwf res0,0
+0126   3E30           00398                 addlw b'00110000'               
+0127   0086           00399                 movwf PORTB
+0128   21D5           00400                 call send
+                      00401 
+0129   302E           00402                 movlw '.'
+012A   0086           00403                 movwf PORTB
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+012B   21D5           00404                 call send
+                      00405 
+012C   30F0           00406                 movlw b'11110000'
+012D   0522           00407                 andwf res1,0
+012E   00A9           00408                 movwf aux
+012F   0EA9           00409                 swapf aux,1
+0130   3030           00410                 movlw b'00110000'               
+0131   0729           00411                 addwf aux,0
+0132   0086           00412                 movwf PORTB
+0133   21D5           00413                 call send
+                      00414 
+0134   300F           00415                 movlw b'00001111'
+0135   0522           00416                 andwf res1,0
+0136   3E30           00417                 addlw b'00110000'               
+0137   0086           00418                 movwf PORTB
+0138   21D5           00419                 call send
+                      00420 
+0139   3076           00421                 movlw 'v'
+013A   0086           00422                 movwf PORTB
+013B   21D5           00423                 call send
+                      00424         
+013C   21DD           00425                 call pausa                      
+013D   0008           00426                 return
+                      00427 
+                      00428 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>nombre
+013E                  00429 name1:
+013E   3047           00430                 movlw 'G'
+013F   0086           00431                 movwf PORTB
+0140   21D5           00432                 call send
+                      00433 
+0141   306F           00434                 movlw 'o'
+0142   0086           00435                 movwf PORTB
+0143   21D5           00436                 call send
+                      00437                                 
+0144   306E           00438                 movlw 'n'
+0145   0086           00439                 movwf PORTB
+0146   21D5           00440                 call send
+                      00441 
+0147   307A           00442                 movlw 'z'
+0148   0086           00443                 movwf PORTB
+0149   21D5           00444                 call send
+                      00445 
+014A   3061           00446                 movlw 'a'
+014B   0086           00447                 movwf PORTB
+014C   21D5           00448                 call send
+                      00449                                 
+014D   306C           00450                 movlw 'l'
+014E   0086           00451                 movwf PORTB
+014F   21D5           00452                 call send               
+                      00453         
+0150   3065           00454                 movlw 'e'
+0151   0086           00455                 movwf PORTB
+0152   21D5           00456                 call send
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00457 
+0153   307A           00458                 movlw 'z'
+0154   0086           00459                 movwf PORTB
+0155   21D5           00460                 call send
+                      00461                                 
+0156   3020           00462                 movlw ' '
+0157   0086           00463                 movwf PORTB
+0158   21D5           00464                 call send
+                      00465 
+0159   3043           00466                 movlw 'C'
+015A   0086           00467                 movwf PORTB
+015B   21D5           00468                 call send
+                      00469 
+015C   306F           00470                 movlw 'o'
+015D   0086           00471                 movwf PORTB
+015E   21D5           00472                 call send
+                      00473                                 
+015F   306C           00474                 movlw 'l'
+0160   0086           00475                 movwf PORTB
+0161   21D5           00476                 call send
+                      00477 
+0162   3069           00478                 movlw 'i'
+0163   0086           00479                 movwf PORTB
+0164   21D5           00480                 call send
+                      00481 
+0165   306E           00482                 movlw 'n'
+0166   0086           00483                 movwf PORTB
+0167   21D5           00484                 call send
+                      00485 
+0168   0008           00486                 return
+                      00487 
+0169                  00488 name2:  
+0169   3046           00489                 movlw 'F'
+016A   0086           00490                 movwf PORTB
+016B   21D5           00491                 call send
+                      00492 
+016C   3065           00493                 movlw 'e'
+016D   0086           00494                 movwf PORTB
+016E   21D5           00495                 call send
+                      00496 
+016F   3072           00497                 movlw 'r'
+0170   0086           00498                 movwf PORTB
+0171   21D5           00499                 call send
+                      00500 
+0172   306E           00501                 movlw 'n'
+0173   0086           00502                 movwf PORTB
+0174   21D5           00503                 call send
+                      00504 
+0175   3061           00505                 movlw 'a'
+0176   0086           00506                 movwf PORTB
+0177   21D5           00507                 call send
+                      00508                 
+0178   306E           00509                 movlw 'n'
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0179   0086           00510                 movwf PORTB
+017A   21D5           00511                 call send
+                      00512 
+017B   3064           00513                 movlw 'd'
+017C   0086           00514                 movwf PORTB
+017D   21D5           00515                 call send
+                      00516 
+017E   306F           00517                 movlw 'o'
+017F   0086           00518                 movwf PORTB
+0180   21D5           00519                 call send
+0181   0008           00520                 return
+                      00521 
+                      00522 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Nombre 2
+0182                  00523 nameA:
+0182   3047           00524                 movlw 'G'
+0183   0086           00525                 movwf PORTB
+0184   21D5           00526                 call send
+                      00527 
+0185   306F           00528                 movlw 'o'
+0186   0086           00529                 movwf PORTB
+0187   21D5           00530                 call send
+                      00531                                 
+0188   3064           00532                 movlw 'd'
+0189   0086           00533                 movwf PORTB
+018A   21D5           00534                 call send
+                      00535 
+018B   306F           00536                 movlw 'o'
+018C   0086           00537                 movwf PORTB
+018D   21D5           00538                 call send
+                      00539 
+018E   3079           00540                 movlw 'y'
+018F   0086           00541                 movwf PORTB
+0190   21D5           00542                 call send
+                      00543                                 
+0191   3020           00544                 movlw ' '
+0192   0086           00545                 movwf PORTB
+0193   21D5           00546                 call send               
+                      00547         
+0194   304A           00548                 movlw 'J'
+0195   0086           00549                 movwf PORTB
+0196   21D5           00550                 call send
+                      00551 
+0197   3075           00552                 movlw 'u'
+0198   0086           00553                 movwf PORTB
+0199   21D5           00554                 call send
+                      00555                                 
+019A   3061           00556                 movlw 'a'
+019B   0086           00557                 movwf PORTB
+019C   21D5           00558                 call send
+                      00559 
+019D   3072           00560                 movlw 'r'
+019E   0086           00561                 movwf PORTB
+019F   21D5           00562                 call send
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00563 
+01A0   3065           00564                 movlw 'e'
+01A1   0086           00565                 movwf PORTB
+01A2   21D5           00566                 call send
+                      00567                                 
+01A3   307A           00568                 movlw 'z'
+01A4   0086           00569                 movwf PORTB
+01A5   21D5           00570                 call send
+                      00571 
+01A6   0008           00572                 return
+                      00573 
+01A7                  00574 nameB:  
+01A7   3043           00575                 movlw 'C'
+01A8   0086           00576                 movwf PORTB
+01A9   21D5           00577                 call send
+                      00578 
+01AA   3061           00579                 movlw 'a'
+01AB   0086           00580                 movwf PORTB
+01AC   21D5           00581                 call send
+                      00582 
+01AD   3072           00583                 movlw 'r'
+01AE   0086           00584                 movwf PORTB
+01AF   21D5           00585                 call send
+                      00586 
+01B0   306C           00587                 movlw 'l'
+01B1   0086           00588                 movwf PORTB
+01B2   21D5           00589                 call send
+                      00590 
+01B3   306F           00591                 movlw 'o'
+01B4   0086           00592                 movwf PORTB
+01B5   21D5           00593                 call send
+                      00594                 
+01B6   3073           00595                 movlw 's'
+01B7   0086           00596                 movwf PORTB
+01B8   21D5           00597                 call send
+                      00598 
+01B9   3020           00599                 movlw ' '
+01BA   0086           00600                 movwf PORTB
+01BB   21D5           00601                 call send
+                      00602 
+01BC   3045           00603                 movlw 'E'
+01BD   0086           00604                 movwf PORTB
+01BE   21D5           00605                 call send
+                      00606 
+01BF   302E           00607                 movlw '.'
+01C0   0086           00608                 movwf PORTB
+01C1   21D5           00609                 call send
+                      00610 
+01C2   0008           00611                 return
+                      00612 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> configuración LCD
+                      00613 
+01C3                  00614 lcd_in:
+01C3   1308           00615                 bcf PORTD,6             ;RS=0
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01C4   3001           00616                 movlw h'01'             ;limpiar pantalla
+01C5   0086           00617                 movwf PORTB     
+01C6   21CF           00618                 call ejecutar
+01C7   300C           00619                 movlw h'0C'             ;primera linea
+01C8   0086           00620                 movwf PORTB     
+01C9   21CF           00621                 call ejecutar
+01CA   303C           00622                 movlw h'3C'             ;configurar cursor
+01CB   0086           00623                 movwf PORTB     
+01CC   21CF           00624                 call ejecutar
+01CD   1408           00625                 bsf PORTD,0             ;RS = 1
+01CE   0008           00626                 return
+                      00627 
+01CF                  00628 ejecutar:
+01CF   1788           00629                 bsf PORTD,7             ;enable = 1
+01D0   21EC           00630                 call delay
+01D1   21EC           00631                 call delay              
+01D2   1388           00632                 bcf PORTD,7             ;enable = 0
+01D3   21EC           00633                 call delay
+01D4   0008           00634                 return
+                      00635 
+01D5                  00636 send:
+01D5   1708           00637                 bsf PORTD,6             ;RS = 1
+01D6   21CF           00638                 call ejecutar
+01D7   0008           00639                 return
+                      00640 
+01D8                  00641 next:
+01D8   1308           00642                 bcf PORTD,6             ;RS = 0
+01D9   30C0           00643                 movlw h'C0'             ;cursor en segunda linea
+01DA   0086           00644                 movwf PORTB
+01DB   21CF           00645                 call ejecutar
+01DC   0008           00646                 return
+                      00647 
+01DD                  00648 pausa:
+01DD   300A           00649                 movlw D'10'
+01DE   00A8           00650                 movwf p
+01DF                  00651 tresP:
+01DF   300A           00652                 movlw D'10'
+01E0   00A7           00653                 movwf Mx
+01E1                  00654 dosP:
+01E1   3032           00655                 movlw D'50'
+01E2   00A6           00656                 movwf Nx
+01E3                  00657 unoP
+01E3   0000           00658                 nop
+01E4   0000           00659                 nop
+01E5   0BA6           00660                 decfsz Nx,1
+01E6   29E3           00661                 goto unoP
+01E7   0BA5           00662                 decfsz M,1
+01E8   29E1           00663                 goto dosP
+01E9   0BA8           00664                 decfsz p,1
+01EA   29DF           00665                 goto tresP
+01EB   0008           00666                 return
+                      00667 
+01EC                  00668 delay:
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01EC   3020           00669                 movlw D'32'
+01ED   00A5           00670                 movwf M
+01EE                  00671 dos:
+01EE   3020           00672                 movlw D'32'
+01EF   00A4           00673                 movwf N
+01F0                  00674 uno:
+01F0   0BA4           00675                 decfsz N,1
+01F1   29F0           00676                 goto uno
+01F2   0BA5           00677                 decfsz M,1
+01F3   29EE           00678                 goto dos
+01F4   0008           00679                 return
+                      00680 
+01F5                  00681 fin:
+                      00682                 end
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ADCON0                            0000001F
+ADCON1                            0000009F
+ADCS0                             00000006
+ADCS1                             00000007
+ADDEN                             00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADON                              00000000
+ADRESH                            0000001E
+ADRESL                            0000009E
+BCLIE                             00000003
+BCLIF                             00000003
+BF                                00000000
+BRGH                              00000002
+C                                 00000000
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           0000001D
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CCPR2                             0000001B
+CCPR2H                            0000001C
+CCPR2L                            0000001B
+CHS0                              00000003
+CHS1                              00000004
+CHS2                              00000005
+CKE                               00000006
+CKP                               00000004
+CREN                              00000004
+CSRC                              00000007
+D                                 00000005
+DATA_ADDRESS                      00000005
+DC                                00000001
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 16
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+D_A                               00000005
+D_NOT_A                           00000005
+EEADR                             0000010D
+EEADRH                            0000010F
+EECON1                            0000018C
+EECON2                            0000018D
+EEDATA                            0000010C
+EEDATH                            0000010E
+EEIE                              00000004
+EEIF                              00000004
+EEPGD                             00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GCEN                              00000007
+GIE                               00000007
+GO                                00000002
+GO_DONE                           00000002
+GO_NOT_DONE                       00000002
+I2C_DATA                          00000005
+I2C_READ                          00000002
+I2C_START                         00000003
+I2C_STOP                          00000004
+IBF                               00000007
+IBOV                              00000005
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+M                                 00000025
+Mx                                00000027
+N                                 00000024
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BO                            00000000
+NOT_BOR                           00000000
+NOT_DONE                          00000002
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RC8                           00000006
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_TX8                           00000006
+NOT_W                             00000002
+NOT_WRITE                         00000002
+Nx                                00000026
+OBF                               00000006
+OERR                              00000001
+OPTION_REG                        00000081
+P                                 00000004
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 17
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PCFG0                             00000000
+PCFG1                             00000001
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PEN                               00000002
+PIE1                              0000008C
+PIE2                              0000008D
+PIR1                              0000000C
+PIR2                              0000000D
+PORTA                             00000005
+PORTB                             00000006
+PORTC                             00000007
+PORTD                             00000008
+PORTE                             00000009
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+PSPIE                             00000007
+PSPIF                             00000007
+PSPMODE                           00000004
+R                                 00000002
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RC0                               00000000
+RC1                               00000001
+RC2                               00000002
+RC3                               00000003
+RC4                               00000004
+RC5                               00000005
+RC6                               00000006
+RC7                               00000007
+RC8_9                             00000006
+RC9                               00000006
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 18
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RCD8                              00000000
+RCEN                              00000003
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RD0                               00000000
+RD1                               00000001
+RD2                               00000002
+RD3                               00000003
+RD4                               00000004
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RE0                               00000000
+RE1                               00000001
+RE2                               00000002
+READ_WRITE                        00000002
+RP0                               00000005
+RP1                               00000006
+RSEN                              00000001
+RX9                               00000006
+RX9D                              00000000
+R_NOT_W                           00000002
+R_W                               00000002
+S                                 00000003
+SEN                               00000000
+SMP                               00000007
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSPADD                            00000093
+SSPBUF                            00000013
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000094
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 19
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T1CON                             00000010
+T1INSYNC                          00000002
+T1OSCEN                           00000003
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRISC                             00000087
+TRISC0                            00000000
+TRISC1                            00000001
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000088
+TRISD0                            00000000
+TRISD1                            00000001
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 20
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TRISD2                            00000002
+TRISD3                            00000003
+TRISD4                            00000004
+TRISD5                            00000005
+TRISD6                            00000006
+TRISD7                            00000007
+TRISE                             00000089
+TRISE0                            00000000
+TRISE1                            00000001
+TRISE2                            00000002
+TRMT                              00000001
+TX8_9                             00000006
+TX9                               00000006
+TX9D                              00000000
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+UA                                00000001
+W                                 00000000
+WCOL                              00000007
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_ALL                           00000FCF
+_CP_HALF                          00001FDF
+_CP_OFF                           00003FFF
+_CP_UPPER_256                     00002FEF
+_DEBUG_OFF                        00003FFF
+_DEBUG_ON                         000037FF
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_WRT_ENABLE_OFF                   00003DFF
+_WRT_ENABLE_ON                    00003FFF
+_WRT_OFF                          00003DFF
+_WRT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F877A                         00000001
+add10                             000000AA
+add100                            000000AF
+add100D                           000000C5
+add10D                            000000C0
+addspace                          000000F7
+aux                               00000029
+bit0                              00000045
+bit1                              0000004F
+bit2                              00000059
+bit3                              00000063
+bit4                              0000006D
+bit5                              00000077
+bit6                              00000081
+bit7                              0000008E
+carlos                            00000015
+ceros                             0000002F
+compdec                           000000A4
+compdecD                          000000BA
+dec0                              00000030
+dec1                              00000031
+delay                             000001EC
+dos                               000001EE
+dosP                              000001E1
+ejecutar                          000001CF
+fer                               0000001F
+fin                               000001F5
+fix                               0000009E
+fixD                              000000B4
+hex0                              00000032
+inicio                            00000005
+l1                                0000002C
+lcd_in                            000001C3
+lcd_inicio                        000000CA
+loop                              00000024
+menorA                            000000E0
+menorA2                           000000F1
+mostrar                           000000CA
+muestreo                          00000021
+name1                             0000013E
+name2                             00000169
+MPASM  5.48                  VOLMETROBIEN.ASM   5-3-2019  0:09:43         PAGE 22
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+nameA                             00000182
+nameB                             000001A7
+next                              000001D8
+p                                 00000028
+pausa                             000001DD
+regresar                          000000B3
+regresarD                         000000C9
+res0                              00000021
+res1                              00000022
+retardo                           0000002A
+seguir                            000000E4
+seguir2                           000000F5
+send                              000001D5
+sumas                             00000034
+tresP                             000001DF
+txt1                              000000CF
+txt2                              00000112
+uno                               000001F0
+unoP                              000001E3
+valor1                            00000023
+varB                              00000020
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X----XXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0180 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+01C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXX-----------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   497
+Program Memory Words Free:  7695
+
+
+Errors   :     0
+Warnings :     6 reported,     0 suppressed
+Messages :     6 reported,     0 suppressed
+
+

@@ -1,0 +1,172 @@
+MPLINK 4.49, Linker
+Linker Map File - Created Tue Apr 23 21:33:11 2019
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000005    program   0x0008d8
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000005    0x000470      
+            1133 out of 8454 program addresses used, program memory utilization is 13%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   A_HEXA   0x000086    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             CENT_DEC_UNI   0x000036    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+         CENT_DEC_UNI_VOL   0x000059    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+      CONVIERTE_A_VOLTAJE   0x000093    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+        ELIJE_FIGURA_TEMP   0x000441    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+ELIJE_FIGURA_VOLMETRO_ALTA   0x0003f4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+ELIJE_FIGURA_VOLMETRO_BAJO   0x000409    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+                   ESPERA   0x000031    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+               IMPRIME_0H   0x00041e    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+               IMPRIME_0L   0x00042d    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_25L   0x000432    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_50H   0x000423    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_50L   0x000437    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_75H   0x000428    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_75L   0x00043c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             IMPRIME_CERO   0x000456    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             IMPRIME_SEIS   0x000468    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             IMPRIME_TRES   0x00045f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+                   INICIO   0x000005    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+                    LCD_E   0x0000cd    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                 LCD_INIT   0x0000b4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                  LEEDATO   0x00002f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                   LINEA1   0x0000ff    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                LINEAVOLT   0x00016f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+  LOADCARACTERTEMPERATURA   0x0002e7    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+     LOADCARACTERVOLMETRO   0x0001fa    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             MUESTRA_TEMP   0x0000ef    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+             MUESTRA_VOLT   0x0000f7    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                  RETARDO   0x0000e2    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+              RETARDO20uS   0x00008e    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+              RETARDO_5MS   0x0000d5    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                    SALEH   0x000408    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+                    SALEL   0x00041d    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+                   SWITCH   0x000016    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+              TEMPERATURA   0x00001c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+                 VOLMETRO   0x000025    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+          contImprimiendo   0x000159    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+       contImprimiendoVOL   0x0001ca    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                 continua   0x000162    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+              continuaVOL   0x0001e0    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                   divide   0x00009f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                divideLow   0x0000a9    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                      dos   0x0000d9    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                     dos2   0x0000e6    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+             inc_centenas   0x000053    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            inc_centenasV   0x000077    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+              inc_decenas   0x000055    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             inc_decenasV   0x000079    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             inc_unidades   0x000057    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            inc_unidadesV   0x00007b    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            incrementaDiv   0x0000af    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                menorHigh   0x000163    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+             menorHighVOL   0x0001d4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                 menorLow   0x000169    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+              menorLowVOL   0x0001da    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+               multiplica   0x000097    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+           resta_centenas   0x00003c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+          resta_centenasV   0x00005f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            resta_decenas   0x000044    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+           resta_decenasV   0x000068    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+       resta_highCentenaV   0x000083    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+              resta_highV   0x00007d    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+           resta_unidades   0x00004c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+          resta_unidadesV   0x000070    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                    sigue   0x0000a5    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                     tres   0x0000d7    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                    tres2   0x0000e4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                      uno   0x0000db    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                     uno2   0x0000e8    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                   uno20u   0x000090    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   INICIO   0x000005    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+                   SWITCH   0x000016    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+              TEMPERATURA   0x00001c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+                 VOLMETRO   0x000025    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\mainVolTemp.asm
+                  LEEDATO   0x00002f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                   ESPERA   0x000031    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             CENT_DEC_UNI   0x000036    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+           resta_centenas   0x00003c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            resta_decenas   0x000044    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+           resta_unidades   0x00004c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             inc_centenas   0x000053    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+              inc_decenas   0x000055    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             inc_unidades   0x000057    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+         CENT_DEC_UNI_VOL   0x000059    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+          resta_centenasV   0x00005f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+           resta_decenasV   0x000068    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+          resta_unidadesV   0x000070    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            inc_centenasV   0x000077    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+             inc_decenasV   0x000079    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            inc_unidadesV   0x00007b    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+              resta_highV   0x00007d    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+       resta_highCentenaV   0x000083    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                   A_HEXA   0x000086    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+              RETARDO20uS   0x00008e    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                   uno20u   0x000090    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+      CONVIERTE_A_VOLTAJE   0x000093    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+               multiplica   0x000097    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                   divide   0x00009f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                    sigue   0x0000a5    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                divideLow   0x0000a9    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+            incrementaDiv   0x0000af    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasConvertidor.inc
+                 LCD_INIT   0x0000b4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                    LCD_E   0x0000cd    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+              RETARDO_5MS   0x0000d5    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                     tres   0x0000d7    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                      dos   0x0000d9    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                      uno   0x0000db    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                  RETARDO   0x0000e2    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                    tres2   0x0000e4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                     dos2   0x0000e6    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                     uno2   0x0000e8    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+             MUESTRA_TEMP   0x0000ef    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+             MUESTRA_VOLT   0x0000f7    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                   LINEA1   0x0000ff    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+          contImprimiendo   0x000159    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                 continua   0x000162    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                menorHigh   0x000163    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                 menorLow   0x000169    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+                LINEAVOLT   0x00016f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+       contImprimiendoVOL   0x0001ca    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+             menorHighVOL   0x0001d4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+              menorLowVOL   0x0001da    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+              continuaVOL   0x0001e0    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\rutinasLcd.inc
+     LOADCARACTERVOLMETRO   0x0001fa    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+  LOADCARACTERTEMPERATURA   0x0002e7    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+ELIJE_FIGURA_VOLMETRO_ALTA   0x0003f4    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+                    SALEH   0x000408    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+ELIJE_FIGURA_VOLMETRO_BAJO   0x000409    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+                    SALEL   0x00041d    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+               IMPRIME_0H   0x00041e    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_50H   0x000423    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_75H   0x000428    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+               IMPRIME_0L   0x00042d    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_25L   0x000432    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_50L   0x000437    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+              IMPRIME_75L   0x00043c    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+        ELIJE_FIGURA_TEMP   0x000441    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             IMPRIME_CERO   0x000456    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             IMPRIME_TRES   0x00045f    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+             IMPRIME_SEIS   0x000468    program     static C:\Users\Personal\Documents\Oscar\Ing\Microcomputadoras\Volmetro y Temperatura\Volmetro y Temperatura\caracterPer.inc
+
+

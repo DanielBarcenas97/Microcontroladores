@@ -1,0 +1,12 @@
+Message[301] C:\PROGRAM FILES (X86)\MICROCHIP\MPASM SUITE\P16F877.INC 33 : MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+Warning[207] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 10 : Found label after column 1. (N)
+Warning[207] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 11 : Found label after column 1. (M)
+Warning[207] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 12 : Found label after column 1. (Nx)
+Warning[207] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 13 : Found label after column 1. (Mx)
+Warning[207] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 14 : Found label after column 1. (p)
+Warning[207] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 16 : Found label after column 1. (aux)
+Message[302] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 34 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 36 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 37 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 38 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\DANIEL\DESKTOP\VIDAMUERTE\VOLMETROBIEN.ASM 76 : Using default destination of 1 (file).

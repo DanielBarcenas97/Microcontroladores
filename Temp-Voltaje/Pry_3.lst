@@ -1,0 +1,1597 @@
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Warning[205]: Found directive in column 1. (processor)
+                      00001 processor 16f877
+Warning[205]: Found directive in column 1. (include)
+                      00002 include <p16f877.inc>   
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F877 processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2012 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+Message[301]: MESSAGE: (Processor-header file mismatch.  Verify selected processor.)
+                      00540         LIST
+  00000020            00003 varB:   equ h'20'
+  00000021            00004 res0:   equ h'21'
+  00000022            00005 res1:   equ h'22'
+  00000023            00006 valor1: equ h'23'
+                      00007 ;variables para uso del LCD     
+Warning[207]: Found label after column 1. (N)
+  00000024            00008         N       equ h'24'
+Warning[207]: Found label after column 1. (M)
+  00000025            00009         M       equ h'25'
+Warning[207]: Found label after column 1. (Nx)
+  00000026            00010         Nx      equ h'26'
+Warning[207]: Found label after column 1. (Mx)
+  00000027            00011         Mx      equ h'27'
+Warning[207]: Found label after column 1. (p)
+  00000028            00012         p       equ h'28'
+Warning[207]: Found label after column 1. (aux)
+  00000029            00013    aux: equ h'29'
+                      00014 ;variables para valor decimal
+  00000030            00015 dec0:   equ h'30'
+  00000031            00016 dec1:   equ h'31'
+                      00017 ;variable para el valor hexa
+  00000032            00018 hex0:   equ h'32'
+                      00019 ;Variables para separar el resultado
+  00000033            00020 Unidades equ 0x33     
+  00000034            00021 Decenas equ 0x34        
+  00000035            00022 Centenas equ 0x35   
+  00000036            00023 Resto equ 0x36
+                      00024 ;Definicion de variables a utilizar para COMPARAR
+  00000037            00025 v0 equ h'37'  
+  00000038            00026 v1 equ h'38'
+  00000039            00027 v2 equ h'39'
+  00000040            00028 c0 equ 40h 
+  00000041            00029 c1 equ 41h
+  00000042            00030 c2 equ 42h
+                      00031 ;Variable para el DELAY d
+  00000043            00032 val equ h'43'
+                      00033 ;Variables para el DELAY del ENABLE LCD
+  00000044            00034 val2 equ 0x44
+  00000045            00035 val1 equ 0x45
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00036 ;>>>>>>>>>>>>Vector de inicio<<<<<<<<<<<<<<<<<
+0000                  00037         org 0
+0000   2805           00038         goto inicio
+0005                  00039         org 5
+                      00040 ;>>>>>>>>>>>>CONFIGURACION PUERTOS <<<<<<<<<<<<<<<
+0005                  00041 inicio:
+0005   0185           00042     CLRF PORTA
+0006   0186           00043         CLRF PORTB
+0007   0187           00044         CLRF PORTC
+0008   0188           00045         CLRF PORTD
+0009   1683           00046         BSF STATUS,RP0  ;Cambiar al banco 1
+000A   1303           00047         BCF STATUS,RP1
+000B   300E           00048         MOVLW h'0E'     ;Configura puertos A y E como analogicos
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000C   009F           00049         MOVWF ADCON1            
+000D   303F           00050         MOVLW 3FH               ;Configura el puerto A como entrada
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000E   0085           00051         MOVWF TRISA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000F   0186           00052         CLRF TRISB              ;configurar puertos B y D como salida
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0010   0188           00053         CLRF TRISD
+0011   3001           00054         MOVLW 0x01              ;CONFIGURA PUERTO C COMO ENTRADA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0012   0087           00055     MOVWF TRISC
+0013   1283           00056         BCF STATUS,RP0  ;regresar al banco 0    
+                      00057 ;>>>>>>>>>>>>>>>>>>>>>>>INICIO PROGRAMA <<<<<<<<<<<<<<<<<<<<<<<<
+0014                  00058 CICLO:
+0014   21BD           00059         call ESCRIBIR
+0015   21DB           00060     call ESCRIBIR2
+0016   21F9           00061     call ESCRIBIR3
+0017   2217           00062     call ESCRIBIR4
+0018   2235           00063         call ESCRIBIR5
+0019   2253           00064         call ESCRIBIR6
+001A   2271           00065         call ESCRIBIR7
+001B   228F           00066         call ESCRIBIR8
+                      00067         
+001C   1C07           00068         BTFSS PORTC,0
+001D   281F           00069     goto START_LCD  ;volmetro
+001E   2823           00070     goto START_LCD1     ;termo
+                      00071 
+001F                  00072 START_LCD:              ;Volmetro
+001F   22AD           00073         call lcd_in    ;Configura el LCD
+0020   2057           00074         call muestreo  ;VOLMETRO
+0021   22EA           00075         call pausa
+0022   2814           00076     goto CICLO
+                      00077 
+0023                  00078 START_LCD1:             ;Termometro
+0023   22AD           00079     call lcd_in    ;Configura el LCD
+0024   216C           00080         call temp         ;TEMP
+0025   22EA           00081         call pausa
+0026   2814           00082     goto CICLO
+0027                  00083 M4:     
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0027   22D6           00084         call CENTRO
+0028   3000           00085     movlw 0x00
+0029   0086           00086         movwf PORTB
+002A   22C8           00087     call  ENVIA
+002B   2060           00088         call  retardo
+002C   0008           00089         return
+002D                  00090 M5:     
+002D   22DB           00091         call CENTRO1
+002E   3001           00092     movlw   0x01
+002F   0086           00093         movwf   PORTB
+0030   22C8           00094     call    ENVIA
+0031   2060           00095         call    retardo
+0032   0008           00096         return
+0033                  00097 M6:     
+0033   22E0           00098         call CENTRO1A
+0034   3002           00099     movlw   0x02
+0035   0086           00100         movwf   PORTB
+0036   22C8           00101     call    ENVIA
+0037   2060           00102         call    retardo
+0038   0008           00103         return
+0039                  00104 M7:     
+0039   22E5           00105         call CENTRO2A
+003A   3003           00106     movlw   0x03
+003B   0086           00107         movwf   PORTB
+003C   22C8           00108     call    ENVIA
+003D   2060           00109         call    retardo
+003E   0008           00110         return
+003F                  00111 M8:     
+003F   22D6           00112         call CENTRO
+0040   3004           00113     movlw   0x04
+0041   0086           00114         movwf   PORTB
+0042   22C8           00115     call    ENVIA
+0043   2060           00116         call    retardo
+0044   0008           00117         return
+0045                  00118 M9:     
+0045   22DB           00119         call CENTRO1
+0046   3005           00120     movlw   0x05
+0047   0086           00121         movwf   PORTB
+0048   22C8           00122     call    ENVIA
+0049   2060           00123         call    retardo
+004A   0008           00124         return
+004B                  00125 M10:    
+004B   22E0           00126         call CENTRO1A
+004C   3006           00127     movlw   0x06
+004D   0086           00128         movwf   PORTB
+004E   22C8           00129     call    ENVIA
+004F   2060           00130         call    retardo
+0050   0008           00131         return
+0051                  00132 M11:    
+0051   22E5           00133         call CENTRO2A
+0052   3007           00134     movlw   0x07
+0053   0086           00135         movwf   PORTB
+0054   22C8           00136     call    ENVIA
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0055   2060           00137         call    retardo
+0056   0008           00138         return
+                      00139 ;>>>>>>>>>>>>>>>>>>>muestreo de entrada analógica<<<<<<<<<<<<<<
+0057                  00140 muestreo:
+0057   30C5           00141                 MOVLW b'11000101' ; Configurar frecuencia de muestreo
+0058   009F           00142                 MOVWF ADCON0
+0059   2060           00143                 CALL retardo
+005A   191F           00144 loop:   BTFSC ADCON0,2
+005B   285A           00145                 GOTO loop
+005C   081E           00146                 MOVF ADRESH,0
+005D   00A0           00147                 MOVWF varB              ;mover el resultado de la conversión a varB
+005E   00B2           00148                 MOVWF hex0              ;mover el resultado de la conversión a hex0
+005F   2865           00149                 GOTO ceros              ;ir a ceros para obtener el valor del voltajes
+                      00150 
+0060                  00151 retardo:        
+0060   3030           00152                 movlw h'30'
+0061   00A3           00153                 movwf valor1
+Message[305]: Using default destination of 1 (file).
+0062   0BA3           00154 l1:     decfsz valor1
+0063   2862           00155                 goto l1
+0064   0008           00156                 return
+                      00157 ;>>>>>>>>>>>>>>>>>>>obtener el valor del voltaje
+0065                  00158 ceros:
+0065   3000           00159                 movlw h'00'
+0066   00A1           00160                 movwf res0
+0067   00A2           00161                 movwf res1
+0068   00B0           00162                 movwf dec0
+0069   00B1           00163                 movwf dec1
+006A                  00164 sumas:  
+006A   1820           00165                 btfsc varB,0
+006B   287B           00166                 goto bit0
+006C   18A0           00167                 btfsc varB,1
+006D   2885           00168                 goto bit1
+006E   1920           00169                 btfsc varB,2
+006F   288F           00170                 goto bit2
+0070   19A0           00171                 btfsc varB,3
+0071   2899           00172                 goto bit3
+0072   1A20           00173                 btfsc varB,4
+0073   28A3           00174                 goto bit4
+0074   1AA0           00175                 btfsc varB,5
+0075   28AD           00176                 goto bit5
+0076   1B20           00177                 btfsc varB,6
+0077   28B7           00178                 goto bit6
+0078   1BA0           00179                 btfsc varB,7
+0079   28C4           00180                 goto bit7
+007A   2900           00181                 goto mostrar
+                      00182 
+007B                  00183 bit0:   ;sumar 0.02; 001
+007B   0822           00184         movf res1,0
+007C   3E02           00185         addlw h'02'
+007D   00A2           00186         movwf res1
+                      00187 
+007E   0831           00188         movf dec1,0
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+007F   3E01           00189         addlw h'01'
+0080   00B1           00190         movwf dec1      
+                      00191 
+0081   20D4           00192         call fix
+0082   20EA           00193         call fixD
+0083   1020           00194         bcf varB,0
+0084   286A           00195         goto sumas
+                      00196 
+0085                  00197 bit1:   ;sumar 0.04; 002
+0085   0822           00198         movf res1,0
+0086   3E04           00199         addlw h'04'
+0087   00A2           00200         movwf res1
+                      00201 
+0088   0831           00202         movf dec1,0
+0089   3E02           00203         addlw h'02'
+008A   00B1           00204         movwf dec1
+                      00205 
+008B   20D4           00206         call fix
+008C   20EA           00207         call fixD
+008D   10A0           00208         bcf varB,1
+008E   286A           00209         goto sumas
+                      00210 
+008F                  00211 bit2:   ;sumar 0.08; 004
+008F   0822           00212         movf res1,0
+0090   3E08           00213         addlw h'08'
+0091   00A2           00214         movwf res1
+                      00215 
+0092   0831           00216         movf dec1,0
+0093   3E04           00217         addlw h'04'
+0094   00B1           00218         movwf dec1
+                      00219 
+0095   20D4           00220         call fix
+0096   20EA           00221         call fixD
+0097   1120           00222         bcf varB,2
+0098   286A           00223         goto sumas
+                      00224 
+0099                  00225 bit3:   ;sumar 0.16; 008
+0099   0822           00226         movf res1,0
+009A   3E16           00227         addlw h'16'
+009B   00A2           00228         movwf res1
+                      00229 
+009C   0831           00230         movf dec1,0
+009D   3E08           00231         addlw h'08'
+009E   00B1           00232         movwf dec1
+                      00233 
+009F   20D4           00234         call fix
+00A0   20EA           00235         call fixD
+00A1   11A0           00236         bcf varB,3
+00A2   286A           00237         goto sumas
+                      00238 
+00A3                  00239 bit4:   ;sumar 0.32; 016
+00A3   0822           00240         movf res1,0
+00A4   3E32           00241         addlw h'32'
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00A5   00A2           00242         movwf res1
+                      00243 
+00A6   0831           00244         movf dec1,0
+00A7   3E16           00245         addlw h'16'
+00A8   00B1           00246         movwf dec1
+                      00247 
+00A9   20D4           00248         call fix
+00AA   20EA           00249         call fixD
+00AB   1220           00250         bcf varB,4
+00AC   286A           00251         goto sumas
+                      00252 
+00AD                  00253 bit5:   ;sumar 0.63; 032
+00AD   0822           00254         movf res1,0
+00AE   3E63           00255         addlw h'63'
+00AF   00A2           00256         movwf res1
+                      00257 
+00B0   0831           00258         movf dec1,0
+00B1   3E32           00259         addlw h'32'
+00B2   00B1           00260         movwf dec1
+                      00261 
+00B3   20D4           00262         call fix
+00B4   20EA           00263         call fixD
+00B5   12A0           00264         bcf varB,5
+00B6   286A           00265         goto sumas
+00B7                  00266 bit6:   ;sumar 1.25; 064
+00B7   0822           00267         movf res1,0
+00B8   3E25           00268         addlw h'25'
+00B9   00A2           00269         movwf res1
+00BA   0821           00270         movf res0,0
+00BB   3E01           00271         addlw h'01'
+00BC   00A1           00272         movwf res0
+                      00273 
+00BD   0831           00274         movf dec1,0
+00BE   3E64           00275         addlw h'64'
+00BF   00B1           00276         movwf dec1
+                      00277 
+00C0   20D4           00278         call fix
+00C1   20EA           00279         call fixD
+00C2   1320           00280         bcf varB,6
+00C3   286A           00281         goto sumas
+                      00282 
+00C4                  00283 bit7:   ;sumar 2.50; 128
+00C4   0822           00284         movf res1,0
+00C5   3E50           00285         addlw h'50'
+00C6   00A2           00286         movwf res1
+00C7   0821           00287         movf res0,0
+00C8   3E02           00288         addlw h'02'
+00C9   00A1           00289         movwf res0
+                      00290 
+00CA   0831           00291         movf dec1,0
+00CB   3E28           00292         addlw h'28'
+00CC   00B1           00293         movwf dec1
+00CD   0830           00294         movf dec0,0
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00CE   3E01           00295         addlw h'01'
+00CF   00B0           00296         movwf dec0
+                      00297 
+00D0   20D4           00298         call fix
+00D1   20EA           00299         call fixD
+00D2   13A0           00300         bcf varB,7
+00D3   286A           00301         goto sumas              ;mostrar resultado en pantalla LCD
+                      00302 
+00D4                  00303 fix:
+00D4   1003           00304         bcf STATUS,C
+00D5   300F           00305         movlw b'00001111'
+00D6   0522           00306         andwf res1,0
+00D7   3C09           00307         sublw b'00001001'
+00D8   1C03           00308         btfss STATUS,C
+00D9   28E0           00309         goto add10
+00DA                  00310 compdec:
+00DA   30F0           00311         movlw b'11110000'
+00DB   0522           00312         andwf res1,0
+00DC   3C90           00313         sublw b'10010000'
+00DD   1C03           00314         btfss STATUS,C
+00DE   28E5           00315         goto add100
+00DF   28E9           00316         goto regresar
+00E0                  00317 add10:
+00E0   300A           00318         movlw b'00001010'
+00E1   02A2           00319         subwf res1,1    
+00E2   3010           00320         movlw b'00010000'
+00E3   07A2           00321         addwf res1,1
+00E4   28DA           00322         goto compdec
+00E5                  00323 add100:
+00E5   30A0           00324         movlw b'10100000'
+00E6   02A2           00325         subwf res1,1    
+00E7   3001           00326         movlw b'00000001'
+00E8   07A1           00327         addwf res0,1
+00E9                  00328 regresar:
+00E9   0008           00329         return
+00EA                  00330 fixD:
+00EA   1003           00331         bcf STATUS,C
+00EB   300F           00332         movlw b'00001111'
+00EC   0531           00333         andwf dec1,0
+00ED   3C09           00334         sublw b'00001001'
+00EE   1C03           00335         btfss STATUS,C
+00EF   28F6           00336         goto add10D
+00F0                  00337 compdecD:
+00F0   30F0           00338         movlw b'11110000'
+00F1   0531           00339         andwf dec1,0
+00F2   3C90           00340         sublw b'10010000'
+00F3   1C03           00341         btfss STATUS,C
+00F4   28FB           00342         goto add100D
+00F5   28E9           00343         goto regresar
+00F6                  00344 add10D:
+00F6   300A           00345         movlw b'00001010'
+00F7   02B1           00346         subwf dec1,1    
+00F8   3010           00347         movlw b'00010000'
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00F9   07B1           00348         addwf dec1,1
+00FA   28F0           00349         goto compdecD
+00FB                  00350 add100D:
+00FB   30A0           00351         movlw b'10100000'
+00FC   02B1           00352         subwf dec1,1    
+00FD   3001           00353         movlw b'00000001'
+00FE   07B0           00354         addwf dec0,1
+00FF                  00355 regresarD:
+00FF   0008           00356         return
+                      00357 
+                      00358 ;>>>>>>>>>>>>>>>>>>>>>>>>>IMPRIME VOLTAJE LCD<<<<<<<<<<<<<<<<<<<<<<<<<
+0100                  00359 mostrar:
+0100                  00360 lcd_inicio:
+0100   22AD           00361                 call lcd_in
+0101   210B           00362                 call txt1
+0102   2027           00363                 call M4
+0103   202D           00364                 call M5
+0104   22EA           00365                 call pausa
+0105   22CB           00366                 call next
+0106   214C           00367                 call txt2
+0107   2033           00368                 call M6
+0108   2039           00369                 call M7
+0109   22EA           00370                 call pausa
+010A   2814           00371                 goto CICLO
+010B                  00372 txt1:   
+010B   3048           00373                 movlw 'H'
+010C   0086           00374                 movwf PORTB
+010D   22C5           00375                 call send
+010E   30F0           00376                 movlw b'11110000'
+010F   0532           00377                 andwf hex0,0    ;xxxx0000
+0110   00A9           00378                 movwf aux               ;
+0111   0EA9           00379                 swapf aux,1             ;0000xxxx
+0112   300A           00380                 movlw h'0A'
+0113   0229           00381                 subwf aux,0             ; w=aux-h0A
+0114   1C03           00382                 btfss STATUS,C
+0115   291C           00383                 goto menorA             ;menor a A
+0116   3009           00384                 movlw h'09'
+0117   0229           00385                 subwf aux,0             ; w=aux-h09
+0118   3E40           00386                 addlw b'01000000'
+0119   0086           00387                 movwf PORTB
+011A   22C5           00388                 call send
+011B   2920           00389                 goto seguir
+011C                  00390 menorA:
+011C   0829           00391                 movf aux,0
+011D   3E30           00392                 addlw b'00110000'
+011E   0086           00393                 movwf PORTB
+011F   22C5           00394                 call send
+0120                  00395 seguir:
+0120   300F           00396                 movlw b'00001111'
+0121   0532           00397                 andwf hex0,0
+0122   00A9           00398                 movwf aux               
+0123   300A           00399                 movlw h'0A'
+0124   0229           00400                 subwf aux,0             ; w=aux-h0A
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0125   1C03           00401                 btfss STATUS,C
+0126   292D           00402                 goto menorA2    ;menor a A      
+0127   3009           00403                 movlw h'09'
+0128   0229           00404                 subwf aux,0             ; w=aux-h09
+0129   3E40           00405                 addlw b'01000000'
+012A   0086           00406                 movwf PORTB
+012B   22C5           00407                 call send
+012C   2931           00408                 goto seguir2
+012D                  00409 menorA2:
+012D   0829           00410                 movf aux,0
+012E   3E30           00411                 addlw b'00110000'
+012F   0086           00412                 movwf PORTB
+0130   22C5           00413                 call send
+0131                  00414 seguir2:
+0131   3009           00415                 movlw D'9'
+0132   00A9           00416                 movwf aux
+0133                  00417 addspace:
+0133   3020           00418                 movlw ' '
+0134   0086           00419                 movwf PORTB
+0135   22C5           00420                 call send       
+0136   3044           00421                 movlw 'D'
+0137   0086           00422                 movwf PORTB
+0138   22C5           00423                 call send
+0139   300F           00424                 movlw b'00001111'
+013A   0530           00425                 andwf dec0,0
+013B   3E30           00426                 addlw b'00110000'               
+013C   0086           00427                 movwf PORTB
+013D   22C5           00428                 call send
+013E   30F0           00429                 movlw b'11110000'
+013F   0531           00430                 andwf dec1,0
+0140   00A9           00431                 movwf aux
+0141   0EA9           00432                 swapf aux,1
+0142   3030           00433                 movlw b'00110000'               
+0143   0729           00434                 addwf aux,0
+0144   0086           00435                 movwf PORTB
+0145   22C5           00436                 call send
+0146   300F           00437                 movlw b'00001111'
+0147   0531           00438                 andwf dec1,0
+0148   3E30           00439                 addlw b'00110000'               
+0149   0086           00440                 movwf PORTB
+014A   22C5           00441                 call send
+014B   0008           00442                 return
+014C                  00443 txt2:
+014C   3056           00444                 movlw 'V'
+014D   0086           00445                 movwf PORTB
+014E   22C5           00446                 call send
+014F   303D           00447                 movlw '='
+0150   0086           00448                 movwf PORTB
+0151   22C5           00449                 call send
+0152   300F           00450                 movlw b'00001111'
+0153   0521           00451                 andwf res0,0
+0154   3E30           00452                 addlw b'00110000'               
+0155   0086           00453                 movwf PORTB
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0156   22C5           00454                 call send
+0157   302E           00455                 movlw '.'
+0158   0086           00456                 movwf PORTB
+0159   22C5           00457                 call send
+015A   30F0           00458                 movlw b'11110000'
+015B   0522           00459                 andwf res1,0
+015C   00A9           00460                 movwf aux
+015D   0EA9           00461                 swapf aux,1
+015E   3030           00462                 movlw b'00110000'               
+015F   0729           00463                 addwf aux,0
+0160   0086           00464                 movwf PORTB
+0161   22C5           00465                 call send
+0162   300F           00466                 movlw b'00001111'
+0163   0522           00467                 andwf res1,0
+0164   3E30           00468                 addlw b'00110000'               
+0165   0086           00469                 movwf PORTB
+0166   22C5           00470                 call send
+0167   3076           00471                 movlw 'v'
+0168   0086           00472                 movwf PORTB
+0169   22C5           00473                 call send
+016A   22EA           00474                 call pausa                      
+016B   0008           00475                 return
+                      00476 
+                      00477 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>><<TEMP<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+016C                  00478 temp:
+016C   30C9           00479         MOVLW b'11001001' ;ConfiguraciÃ³n ADCON0 
+016D   151F           00480         bsf ADCON0,2 
+016E   009F           00481         movwf ADCON0      ;ADCS1=1 ADCS0=1 CHS2=0 CHS1=0 CHS0=1 GO/DONE=0 - ADON=1
+016F   21B8           00482     call DELAY1       ;Espera que termine la conversión
+Warning[207]: Found label after column 1. (ESPERA)
+0170                  00483         ESPERA: 
+0170   191F           00484                 BTFSC ADCON0,2    ;Pregunta por DONE=0?(Terminó conversión)
+0171   2970           00485         goto ESPERA       ;No, vuelve a preguntar
+0172   081E           00486         MOVF ADRESH,0     ;Si
+0173   0086           00487                 MOVWF PORTB      ;Muestra el resultado en PORTB
+                      00488         
+0174   3054           00489                 movlw 'T'
+0175   0086           00490         movwf PORTB
+0176   22C5           00491         call send
+0177   303D           00492         movlw '='
+0178   0086           00493         movwf PORTB
+0179   22C5           00494         call send
+                      00495 
+017A   081E           00496                 MOVF ADRESH,0     ;Si
+017B   0086           00497                 MOVWF PORTB      ;Muestra el resultado en PORTB
+                      00498         
+017C   219D           00499                 call READ_TEMP  ;valor de la temperatura del resultado del Conv a/D
+                      00500             
+017D   0835           00501                 movf Centenas,W   ;Imprime el dígito de las centenas
+017E   0086           00502         movwf PORTB
+017F   22C5           00503         call send
+0180   0834           00504         movf Decenas,W    ;Imprime el dígito de las decenas
+0181   0086           00505         movwf PORTB
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0182   22C5           00506         call send
+0183   0833           00507         movf Unidades,W   ;Imprime el dígito de las unidades
+0184   0086           00508         movwf PORTB
+0185   22C5           00509         call send
+0186   3020           00510         movlw ' '
+0187   0086           00511         movwf PORTB
+0188   22C5           00512         call send
+0189   30DF           00513         movlw h'DF'       ;Imprime el simbolo "°"
+018A   0086           00514         movwf PORTB
+018B   22C5           00515         call send
+018C   3043           00516         movlw 'C'
+018D   0086           00517         movwf PORTB
+018E   22C5           00518         call send
+018F   3020           00519                 movlw ' '
+0190   0086           00520         movwf PORTB
+0191   22C5           00521         call send
+0192   3020           00522                 movlw ' '
+0193   0086           00523         movwf PORTB
+0194   22C5           00524         call send
+                      00525                 ;Despliegue de simbolos
+0195   203F           00526                 call M8
+0196   2045           00527                 call M9
+0197   22CB           00528                 call next
+0198   210B           00529                 call txt1
+                      00530                 ;Despliegue de simbolos
+0199   204B           00531                 call M10
+019A   2051           00532                 call M11
+019B   22EA           00533                 call pausa
+019C   2814           00534                 GOTO CICLO
+019D                  00535 READ_TEMP:
+019D   01B5           00536     clrf Centenas
+019E   01B4           00537     clrf Decenas
+019F   01B3           00538     clrf Unidades 
+01A0   081E           00539     movf ADRESH,W   
+01A1   071E           00540     addwf ADRESH,W     ;Dupilca el valor de ADRESH para obtener un valor de temperatura real aprox
+01A2   00B6           00541     movwf Resto        ;Guarda el valor de ADRESH en Resto  
+                      00542             
+01A3                  00543 CENTENAS1
+01A3   3064           00544         movlw d'100'      ;W=d'100'
+01A4   0236           00545         subwf Resto,W     ;Resto - d'100' (W)
+01A5   1C03           00546     btfss STATUS,C    ;Resto menor que d'100'?
+01A6   29AA           00547     goto DECENAS1     ;SI
+01A7   00B6           00548     movwf Resto       ;NO, Salva el resto
+01A8   0AB5           00549     incf Centenas,1   ;Incrementa el contador de centenas BCD
+01A9   29A3           00550     goto CENTENAS1    ;Realiza otra resta
+01AA                  00551 DECENAS1
+01AA   300A           00552     movlw d'10'       ;W=d'10'
+01AB   0236           00553     Subwf Resto,W     ;Resto - d'10' (W)
+01AC   1C03           00554     btfss STATUS,C    ;Resto menor que d'10'?
+01AD   29B1           00555     goto UNIDADES1    ;Si
+01AE   00B6           00556     movwf Resto       ;No, Salva el resto
+01AF   0AB4           00557     incf Decenas,1    ;Incrementa el contador de centenas BCD
+01B0   29AA           00558     goto DECENAS1     ;Realiza otra resta
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01B1                  00559 UNIDADES1
+01B1   0836           00560     movf Resto,W      ;El resto son la Unidades BCD
+01B2   00B3           00561     movwf Unidades  
+                      00562 ;Rutina que obtiene el equivalente en ASCII        
+01B3                  00563 OBTEN_ASCII:
+01B3   3030           00564     movlw h'30' 
+01B4   04B3           00565     iorwf Unidades,f      
+01B5   04B4           00566     iorwf Decenas,f
+01B6   04B5           00567     iorwf Centenas,f      
+01B7   0008           00568     return
+                      00569 ;Rutina que genera un Delay de 20 microSeg aprox para el Conv. A/D
+01B8                  00570 DELAY1:             
+01B8   3030           00571     movlw h'30'
+01B9   00C3           00572     movwf val
+01BA   0BC3           00573 Loop decfsz val,1
+01BB   29BA           00574     goto Loop
+01BC   0008           00575     return
+                      00576 ;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>ICONOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+01BD                  00577 ESCRIBIR:
+01BD   1008           00578         bcf PORTD,0
+01BE   3040           00579     movlw 0x40       ; CGRAM
+01BF   0086           00580     movwf PORTB
+01C0   22BF           00581     call COMANDO     ; Se da de alta el comando
+01C1   1408           00582         bsf PORTD,0
+01C2   3003           00583         movlw b'00000011'
+01C3   0086           00584         movwf PORTB
+01C4   22BF           00585     call COMANDO 
+01C5   3004           00586         movlw b'00000100'
+01C6   0086           00587         movwf PORTB
+01C7   22BF           00588     call COMANDO 
+01C8   3004           00589         movlw b'00000100'
+01C9   0086           00590     movwf PORTB
+01CA   22BF           00591         call COMANDO 
+01CB   3004           00592         movlw b'00000100'
+01CC   0086           00593     movwf PORTB
+01CD   22BF           00594         call COMANDO 
+01CE   3004           00595         movlw b'00000100'
+01CF   0086           00596         movwf PORTB
+01D0   22BF           00597     call COMANDO 
+01D1   3008           00598         movlw b'00001000'
+01D2   0086           00599         movwf PORTB
+01D3   22BF           00600     call COMANDO 
+01D4   3008           00601         movlw b'00001000'
+01D5   0086           00602         movwf PORTB
+01D6   22BF           00603     call COMANDO  
+01D7   3008           00604         movlw b'00001000'
+01D8   0086           00605         movwf PORTB
+01D9   22BF           00606     call COMANDO 
+01DA   0008           00607         return
+                      00608 
+01DB                  00609 ESCRIBIR2:
+01DB   1008           00610         bcf PORTD,0
+01DC   3048           00611     movlw 0x48       ; CGRAM
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01DD   0086           00612     movwf PORTB
+01DE   22BF           00613     call COMANDO     ; Se da de alta el comando
+01DF   1408           00614         bsf PORTD,0
+01E0   3018           00615         movlw b'00011000'
+01E1   0086           00616         movwf PORTB
+01E2   22BF           00617     call COMANDO 
+01E3   3004           00618         movlw b'00000100'
+01E4   0086           00619         movwf PORTB
+01E5   22BF           00620     call COMANDO 
+01E6   3004           00621         movlw b'00000100'
+01E7   0086           00622     movwf PORTB
+01E8   22BF           00623         call COMANDO 
+01E9   3004           00624         movlw b'00000100'
+01EA   0086           00625     movwf PORTB
+01EB   22BF           00626         call COMANDO 
+01EC   3004           00627         movlw b'00000100'
+01ED   0086           00628         movwf PORTB
+01EE   22BF           00629     call COMANDO 
+01EF   3002           00630         movlw b'00000010'
+01F0   0086           00631         movwf PORTB
+01F1   22BF           00632     call COMANDO 
+01F2   3002           00633         movlw b'00000010'
+01F3   0086           00634         movwf PORTB
+01F4   22BF           00635     call COMANDO  
+01F5   3003           00636         movlw b'00000011' ;error
+01F6   0086           00637         movwf PORTB
+01F7   22BF           00638     call COMANDO 
+01F8   0008           00639         return
+                      00640 
+01F9                  00641 ESCRIBIR3:
+01F9   1008           00642         bcf PORTD,0
+01FA   3050           00643     movlw 0x50       ; CGRAM
+01FB   0086           00644     movwf PORTB
+01FC   22BF           00645     call COMANDO     ; Se da de alta el comando
+01FD   1408           00646         bsf PORTD,0
+01FE   3010           00647         movlw b'00010000'
+01FF   0086           00648         movwf PORTB
+0200   22BF           00649     call COMANDO 
+0201   3010           00650         movlw b'00010000'
+0202   0086           00651         movwf PORTB
+0203   22BF           00652     call COMANDO 
+0204   3010           00653         movlw b'00010000'
+0205   0086           00654     movwf PORTB
+0206   22BF           00655         call COMANDO 
+0207   3010           00656         movlw b'00010000'
+0208   0086           00657     movwf PORTB
+0209   22BF           00658         call COMANDO 
+020A   3010           00659         movlw b'00010000'
+020B   0086           00660         movwf PORTB
+020C   22BF           00661     call COMANDO 
+020D   3010           00662         movlw b'00010000'
+020E   0086           00663         movwf PORTB
+020F   22BF           00664     call COMANDO 
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0210   3010           00665         movlw b'00010000'
+0211   0086           00666         movwf PORTB
+0212   22BF           00667     call COMANDO  
+0213   301F           00668         movlw b'00011111'
+0214   0086           00669         movwf PORTB
+0215   22BF           00670     call COMANDO 
+0216   0008           00671         return
+                      00672 
+0217                  00673 ESCRIBIR4:
+0217   1008           00674         bcf PORTD,0
+0218   3058           00675     movlw 0x58       ; CGRAM
+0219   0086           00676     movwf PORTB
+021A   22BF           00677     call COMANDO     ; Se da de alta el comando
+021B   1408           00678         bsf PORTD,0
+021C   3001           00679         movlw b'00000001'
+021D   0086           00680         movwf PORTB
+021E   22BF           00681     call COMANDO 
+021F   3001           00682         movlw b'00000001'
+0220   0086           00683         movwf PORTB
+0221   22BF           00684     call COMANDO 
+0222   3001           00685         movlw b'00000001'
+0223   0086           00686     movwf PORTB
+0224   22BF           00687         call COMANDO 
+0225   3001           00688         movlw b'00000001'
+0226   0086           00689     movwf PORTB
+0227   22BF           00690         call COMANDO 
+0228   3001           00691         movlw b'00000001'
+0229   0086           00692         movwf PORTB
+022A   22BF           00693     call COMANDO 
+022B   3001           00694         movlw b'00000001'
+022C   0086           00695         movwf PORTB
+022D   22BF           00696     call COMANDO 
+022E   3001           00697         movlw b'00000001'
+022F   0086           00698         movwf PORTB
+0230   22BF           00699     call COMANDO  
+0231   301F           00700         movlw b'00011111'
+0232   0086           00701         movwf PORTB
+0233   22BF           00702     call COMANDO 
+0234   0008           00703         return
+                      00704 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00705 
+                      00706 
+0235                  00707 ESCRIBIR5:
+0235   1008           00708         bcf PORTD,0
+0236   3060           00709     movlw 0x60       ; CGRAM
+0237   0086           00710     movwf PORTB
+0238   22BF           00711     call COMANDO     ; Se da de alta el comando
+0239   1408           00712         bsf PORTD,0
+023A   300F           00713         movlw b'00001111'
+023B   0086           00714         movwf PORTB
+023C   22BF           00715     call COMANDO 
+023D   3010           00716         movlw b'00010000'
+023E   0086           00717         movwf PORTB
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+023F   22BF           00718     call COMANDO 
+0240   3010           00719         movlw b'00010000'
+0241   0086           00720     movwf PORTB
+0242   22BF           00721         call COMANDO 
+0243   3010           00722         movlw b'00010000'
+0244   0086           00723     movwf PORTB
+0245   22BF           00724         call COMANDO 
+0246   3010           00725         movlw b'00010000'
+0247   0086           00726         movwf PORTB
+0248   22BF           00727     call COMANDO 
+0249   3010           00728         movlw b'00010000'
+024A   0086           00729         movwf PORTB
+024B   22BF           00730     call COMANDO 
+024C   3010           00731         movlw b'00010000'
+024D   0086           00732         movwf PORTB
+024E   22BF           00733     call COMANDO  
+024F   3010           00734         movlw b'00010000'
+0250   0086           00735         movwf PORTB
+0251   22BF           00736     call COMANDO 
+0252   0008           00737         return
+                      00738 
+0253                  00739 ESCRIBIR6:
+0253   1008           00740         bcf PORTD,0
+0254   3068           00741     movlw 0x68       ; CGRAM
+0255   0086           00742     movwf PORTB
+0256   22BF           00743     call COMANDO     ; Se da de alta el comando
+0257   1408           00744         bsf PORTD,0
+0258   301E           00745         movlw b'00011110'
+0259   0086           00746         movwf PORTB
+025A   22BF           00747     call COMANDO 
+025B   3001           00748         movlw b'00000001'
+025C   0086           00749         movwf PORTB
+025D   22BF           00750     call COMANDO 
+025E   3001           00751         movlw b'00000001'
+025F   0086           00752     movwf PORTB
+0260   22BF           00753         call COMANDO 
+0261   3001           00754         movlw b'00000001'
+0262   0086           00755     movwf PORTB
+0263   22BF           00756         call COMANDO 
+0264   3001           00757         movlw b'00000001'
+0265   0086           00758         movwf PORTB
+0266   22BF           00759     call COMANDO 
+0267   3001           00760         movlw b'00000001'
+0268   0086           00761         movwf PORTB
+0269   22BF           00762     call COMANDO 
+026A   3001           00763         movlw b'00000001'
+026B   0086           00764         movwf PORTB
+026C   22BF           00765     call COMANDO  
+026D   3001           00766         movlw b'00000001'
+026E   0086           00767         movwf PORTB
+026F   22BF           00768     call COMANDO 
+0270   0008           00769         return
+                      00770 
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0271                  00771 ESCRIBIR7:
+0271   1008           00772         bcf PORTD,0
+0272   3070           00773     movlw 0x70       ; CGRAM
+0273   0086           00774     movwf PORTB
+0274   22BF           00775     call COMANDO     ; Se da de alta el comando
+0275   1408           00776         bsf PORTD,0
+0276   3010           00777         movlw b'00010000'
+0277   0086           00778         movwf PORTB
+0278   22BF           00779     call COMANDO 
+0279   3010           00780         movlw b'00010000'
+027A   0086           00781         movwf PORTB
+027B   22BF           00782     call COMANDO 
+027C   3010           00783         movlw b'00010000'
+027D   0086           00784     movwf PORTB
+027E   22BF           00785         call COMANDO 
+027F   3010           00786         movlw b'00010000'
+0280   0086           00787     movwf PORTB
+0281   22BF           00788         call COMANDO 
+0282   3008           00789         movlw b'00001000'
+0283   0086           00790         movwf PORTB
+0284   22BF           00791     call COMANDO 
+0285   3004           00792         movlw b'00000100'
+0286   0086           00793         movwf PORTB
+0287   22BF           00794     call COMANDO 
+0288   3002           00795         movlw b'00000010'
+0289   0086           00796         movwf PORTB
+028A   22BF           00797     call COMANDO  
+028B   3001           00798         movlw b'00000001'
+028C   0086           00799         movwf PORTB
+028D   22BF           00800     call COMANDO 
+028E   0008           00801         return
+                      00802 
+028F                  00803 ESCRIBIR8:
+028F   1008           00804         bcf PORTD,0
+0290   3078           00805     movlw 0x78       ; CGRAM
+0291   0086           00806     movwf PORTB
+0292   22BF           00807     call COMANDO     ; Se da de alta el comando
+0293   1408           00808         bsf PORTD,0
+0294   3001           00809         movlw b'00000001'
+0295   0086           00810         movwf PORTB
+0296   22BF           00811     call COMANDO 
+0297   3001           00812         movlw b'00000001'
+0298   0086           00813         movwf PORTB
+0299   22BF           00814     call COMANDO 
+029A   3001           00815         movlw b'00000001'
+029B   0086           00816     movwf PORTB
+029C   22BF           00817         call COMANDO 
+029D   3001           00818         movlw b'00000001'
+029E   0086           00819     movwf PORTB
+029F   22BF           00820         call COMANDO 
+02A0   3002           00821         movlw b'00000010'
+02A1   0086           00822         movwf PORTB
+02A2   22BF           00823     call COMANDO 
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+02A3   3004           00824         movlw b'00000100'
+02A4   0086           00825         movwf PORTB
+02A5   22BF           00826     call COMANDO 
+02A6   3008           00827         movlw b'00001000'
+02A7   0086           00828         movwf PORTB
+02A8   22BF           00829     call COMANDO  
+02A9   3010           00830         movlw b'00010000'
+02AA   0086           00831         movwf PORTB
+02AB   22BF           00832     call COMANDO 
+02AC   0008           00833         return
+                      00834 ;>>>>>>>>>>>>>>>>> configuración LCD<<<<<<<<<<<<<<<<<<<<<<<<<<<
+02AD                  00835 lcd_in:
+02AD   1008           00836         bcf PORTD,0             ;RS=0
+02AE   3001           00837         movlw h'01'             ;limpiar pantalla
+02AF   0086           00838         movwf PORTB     
+02B0   22B9           00839         call ejecutar
+02B1   300C           00840         movlw h'0C'             ;primera linea
+02B2   0086           00841         movwf PORTB     
+02B3   22B9           00842         call ejecutar
+02B4   303C           00843         movlw h'3C'             ;configurar cursor
+02B5   0086           00844         movwf PORTB     
+02B6   22B9           00845         call ejecutar
+02B7   1408           00846         bsf PORTD,0             ;RS = 1
+02B8   0008           00847         return
+02B9                  00848 ejecutar:
+02B9   1488           00849         bsf PORTD,1     ;7      ;enable = 1
+02BA   22F7           00850         call delay
+02BB   22F7           00851         call delay              
+02BC   1088           00852         bcf PORTD,1     ;7      ;enable = 0
+02BD   22F7           00853         call delay
+02BE   0008           00854         return
+02BF                  00855 COMANDO:
+02BF   1488           00856         bsf PORTD,1     ;7      ;enable = 1
+02C0   22F7           00857         call delay
+02C1   22F7           00858         call delay              
+02C2   1088           00859         bcf PORTD,1     ;7      ;enable = 0
+02C3   22F7           00860         call delay
+02C4   0008           00861         return
+02C5                  00862 send:
+02C5   1408           00863         bsf PORTD,0      ;6     ;RS = 1
+02C6   22B9           00864         call ejecutar
+02C7   0008           00865         return
+02C8                  00866 ENVIA:
+02C8   1408           00867     bsf PORTD,0     ; RS=1 MODO DATO
+02C9   22BF           00868     call COMANDO    ; Se da de alta el comando
+02CA   0008           00869     return
+                      00870 
+02CB                  00871 next: ;segunda linea
+02CB   1008           00872         bcf PORTD,0     ;6      ;RS = 0
+02CC   30C0           00873         movlw h'C0'             ;cursor en segunda linea
+02CD   0086           00874         movwf PORTB
+02CE   22B9           00875         call ejecutar
+02CF   0008           00876         return
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00877 
+02D0                  00878 ERASE_LCD
+02D0   1008           00879         bcf PORTD,0      ; RS=0 MODO INSTRUCCION
+02D1   3001           00880     movlw 0x01       ; 0x01 limpia la pantalla en el LCD
+02D2   0086           00881     movwf PORTB
+02D3   22BF           00882     Call COMANDO     ; Se da de alta el comando
+02D4   1408           00883     bsf PORTD, 0     ; Rs=1 MODO DATO
+02D5   0008           00884         return
+                      00885           
+02D6                  00886 CENTRO:
+02D6   1008           00887     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
+02D7   308D           00888         movlw 0x8d
+02D8   0086           00889     movwf PORTB
+02D9   22BF           00890     call COMANDO    ; Se da de alta el comando
+02DA   0008           00891     return
+                      00892 
+02DB                  00893 CENTRO1:
+02DB   1008           00894     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
+02DC   308E           00895         movlw 0x8e
+02DD   0086           00896     movwf PORTB
+02DE   22BF           00897     call COMANDO    ; Se da de alta el comando
+02DF   0008           00898     return
+                      00899 
+02E0                  00900 CENTRO1A:
+02E0   1008           00901     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
+02E1   30CD           00902         movlw 0xcd
+02E2   0086           00903     movwf PORTB
+02E3   22BF           00904     call COMANDO    ; Se da de alta el comando
+02E4   0008           00905     return
+                      00906 
+02E5                  00907 CENTRO2A:
+02E5   1008           00908     bcf PORTD, 0    ; RS=0 MODO INSTRUCCION
+02E6   30CE           00909         movlw 0xce
+02E7   0086           00910     movwf PORTB
+02E8   22BF           00911     call COMANDO    ; Se da de alta el comando
+02E9   0008           00912     return
+                      00913 
+02EA                  00914 pausa:
+02EA   300A           00915                 movlw D'10'
+02EB   00A8           00916                 movwf p
+02EC                  00917 tresP:
+02EC   300A           00918                 movlw D'10'
+02ED   00A7           00919                 movwf Mx
+02EE                  00920 dosP:
+02EE   3032           00921                 movlw D'50'
+02EF   00A6           00922                 movwf Nx
+02F0                  00923 unoP
+02F0   0BA6           00924                 decfsz Nx,1
+02F1   2AF0           00925                 goto unoP
+02F2   0BA5           00926                 decfsz M,1
+02F3   2AEE           00927                 goto dosP
+02F4   0BA8           00928                 decfsz p,1
+02F5   2AEC           00929                 goto tresP
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+02F6   0008           00930                 return
+02F7                  00931 delay:
+02F7   3020           00932                 movlw D'32'
+02F8   00A5           00933                 movwf M
+02F9                  00934 dos:
+02F9   3020           00935                 movlw D'32'
+02FA   00A4           00936                 movwf N
+02FB                  00937 uno:
+02FB   0BA4           00938                 decfsz N,1
+02FC   2AFB           00939                 goto uno
+02FD   0BA5           00940                 decfsz M,1
+02FE   2AF9           00941                 goto dos
+02FF   0008           00942                 return
+                      00943                 end
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 20
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ADCON0                            0000001F
+ADCON1                            0000009F
+ADCS0                             00000006
+ADCS1                             00000007
+ADDEN                             00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADON                              00000000
+ADRESH                            0000001E
+ADRESL                            0000009E
+BCLIE                             00000003
+BCLIF                             00000003
+BF                                00000000
+BRGH                              00000002
+C                                 00000000
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           0000001D
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CCPR2                             0000001B
+CCPR2H                            0000001C
+CCPR2L                            0000001B
+CENTENAS1                         000001A3
+CENTRO                            000002D6
+CENTRO1                           000002DB
+CENTRO1A                          000002E0
+CENTRO2A                          000002E5
+CHS0                              00000003
+CHS1                              00000004
+CHS2                              00000005
+CICLO                             00000014
+CKE                               00000006
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CKP                               00000004
+COMANDO                           000002BF
+CREN                              00000004
+CSRC                              00000007
+Centenas                          00000035
+D                                 00000005
+DATA_ADDRESS                      00000005
+DC                                00000001
+DECENAS1                          000001AA
+DELAY1                            000001B8
+D_A                               00000005
+D_NOT_A                           00000005
+Decenas                           00000034
+EEADR                             0000010D
+EEADRH                            0000010F
+EECON1                            0000018C
+EECON2                            0000018D
+EEDATA                            0000010C
+EEDATH                            0000010E
+EEIE                              00000004
+EEIF                              00000004
+EEPGD                             00000007
+ENVIA                             000002C8
+ERASE_LCD                         000002D0
+ESCRIBIR                          000001BD
+ESCRIBIR2                         000001DB
+ESCRIBIR3                         000001F9
+ESCRIBIR4                         00000217
+ESCRIBIR5                         00000235
+ESCRIBIR6                         00000253
+ESCRIBIR7                         00000271
+ESCRIBIR8                         0000028F
+ESPERA                            00000170
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GCEN                              00000007
+GIE                               00000007
+GO                                00000002
+GO_DONE                           00000002
+GO_NOT_DONE                       00000002
+I2C_DATA                          00000005
+I2C_READ                          00000002
+I2C_START                         00000003
+I2C_STOP                          00000004
+IBF                               00000007
+IBOV                              00000005
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 22
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+Loop                              000001BA
+M                                 00000025
+M10                               0000004B
+M11                               00000051
+M4                                00000027
+M5                                0000002D
+M6                                00000033
+M7                                00000039
+M8                                0000003F
+M9                                00000045
+Mx                                00000027
+N                                 00000024
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BO                            00000000
+NOT_BOR                           00000000
+NOT_DONE                          00000002
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RC8                           00000006
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_TX8                           00000006
+NOT_W                             00000002
+NOT_WRITE                         00000002
+Nx                                00000026
+OBF                               00000006
+OBTEN_ASCII                       000001B3
+OERR                              00000001
+OPTION_REG                        00000081
+P                                 00000004
+PCFG0                             00000000
+PCFG1                             00000001
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PEN                               00000002
+PIE1                              0000008C
+PIE2                              0000008D
+PIR1                              0000000C
+PIR2                              0000000D
+PORTA                             00000005
+PORTB                             00000006
+PORTC                             00000007
+PORTD                             00000008
+PORTE                             00000009
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 23
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PS2                               00000002
+PSA                               00000003
+PSPIE                             00000007
+PSPIF                             00000007
+PSPMODE                           00000004
+R                                 00000002
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RC0                               00000000
+RC1                               00000001
+RC2                               00000002
+RC3                               00000003
+RC4                               00000004
+RC5                               00000005
+RC6                               00000006
+RC7                               00000007
+RC8_9                             00000006
+RC9                               00000006
+RCD8                              00000000
+RCEN                              00000003
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RD0                               00000000
+RD1                               00000001
+RD2                               00000002
+RD3                               00000003
+RD4                               00000004
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RE0                               00000000
+RE1                               00000001
+RE2                               00000002
+READ_TEMP                         0000019D
+READ_WRITE                        00000002
+RP0                               00000005
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 24
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RP1                               00000006
+RSEN                              00000001
+RX9                               00000006
+RX9D                              00000000
+R_NOT_W                           00000002
+R_W                               00000002
+Resto                             00000036
+S                                 00000003
+SEN                               00000000
+SMP                               00000007
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSPADD                            00000093
+SSPBUF                            00000013
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000094
+START_LCD                         0000001F
+START_LCD1                        00000023
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1INSYNC                          00000002
+T1OSCEN                           00000003
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 25
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRISC                             00000087
+TRISC0                            00000000
+TRISC1                            00000001
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000088
+TRISD0                            00000000
+TRISD1                            00000001
+TRISD2                            00000002
+TRISD3                            00000003
+TRISD4                            00000004
+TRISD5                            00000005
+TRISD6                            00000006
+TRISD7                            00000007
+TRISE                             00000089
+TRISE0                            00000000
+TRISE1                            00000001
+TRISE2                            00000002
+TRMT                              00000001
+TX8_9                             00000006
+TX9                               00000006
+TX9D                              00000000
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 26
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+UA                                00000001
+UNIDADES1                         000001B1
+Unidades                          00000033
+W                                 00000000
+WCOL                              00000007
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_ALL                           00000FCF
+_CP_HALF                          00001FDF
+_CP_OFF                           00003FFF
+_CP_UPPER_256                     00002FEF
+_DEBUG_OFF                        00003FFF
+_DEBUG_ON                         000037FF
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_WRT_ENABLE_OFF                   00003DFF
+_WRT_ENABLE_ON                    00003FFF
+_WRT_OFF                          00003DFF
+_WRT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F877A                         00000001
+add10                             000000E0
+add100                            000000E5
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 27
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+add100D                           000000FB
+add10D                            000000F6
+addspace                          00000133
+aux                               00000029
+bit0                              0000007B
+bit1                              00000085
+bit2                              0000008F
+bit3                              00000099
+bit4                              000000A3
+bit5                              000000AD
+bit6                              000000B7
+bit7                              000000C4
+c0                                00000040
+c1                                00000041
+c2                                00000042
+ceros                             00000065
+compdec                           000000DA
+compdecD                          000000F0
+dec0                              00000030
+dec1                              00000031
+delay                             000002F7
+dos                               000002F9
+dosP                              000002EE
+ejecutar                          000002B9
+fix                               000000D4
+fixD                              000000EA
+hex0                              00000032
+inicio                            00000005
+l1                                00000062
+lcd_in                            000002AD
+lcd_inicio                        00000100
+loop                              0000005A
+menorA                            0000011C
+menorA2                           0000012D
+mostrar                           00000100
+muestreo                          00000057
+next                              000002CB
+p                                 00000028
+pausa                             000002EA
+regresar                          000000E9
+regresarD                         000000FF
+res0                              00000021
+res1                              00000022
+retardo                           00000060
+seguir                            00000120
+seguir2                           00000131
+send                              000002C5
+sumas                             0000006A
+temp                              0000016C
+tresP                             000002EC
+txt1                              0000010B
+txt2                              0000014C
+uno                               000002FB
+MPASM  5.48                         PRY_3.ASM   5-3-2019  0:38:54         PAGE 28
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+unoP                              000002F0
+v0                                00000037
+v1                                00000038
+v2                                00000039
+val                               00000043
+val1                              00000045
+val2                              00000044
+valor1                            00000023
+varB                              00000020
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X----XXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0180 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+01C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0200 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0240 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0280 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+02C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+
+All other memory blocks unused.
+
+Program Memory Words Used:   764
+Program Memory Words Free:  7428
+
+
+Errors   :     0
+Warnings :     9 reported,     0 suppressed
+Messages :     7 reported,     0 suppressed
+
+
